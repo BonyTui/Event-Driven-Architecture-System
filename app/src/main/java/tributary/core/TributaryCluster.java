@@ -132,24 +132,6 @@ public class TributaryCluster implements TributaryService {
         }
     }
 
-    public void createProducer(String producerId, String type, String allocation) {
-        Producer p;
-        switch (allocation) {
-        case "Random":
-            p = new RandomProducer(producerId, type);
-            break;
-        case "Manual":
-            p = new ManualProducer(producerId, type);
-            break;
-        default:
-            System.err.println("Invalid Allocation Method");
-            return;
-        }
-
-        producerList.add(p);
-        System.out.println("Producer " + producerId + " created");
-    }
-
     public void createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         ConsumerGroup cg;
         if (balancingMethod.equals("Range") || balancingMethod.equals("RoundRobin")) {
@@ -179,5 +161,23 @@ public class TributaryCluster implements TributaryService {
             System.err.println("Invalid Consumer Group");
             return;
         }
+    }
+
+    public void createProducer(String producerId, String type, String allocation) {
+        Producer p;
+        switch (allocation) {
+        case "Random":
+            p = new RandomProducer(producerId, type);
+            break;
+        case "Manual":
+            p = new ManualProducer(producerId, type);
+            break;
+        default:
+            System.out.println("Invalid Allocation Method");
+            return;
+        }
+
+        producerList.add(p);
+        System.out.println("Producer " + producerId + " created");
     }
 }
