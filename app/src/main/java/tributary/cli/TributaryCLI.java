@@ -1,6 +1,7 @@
 package tributary.cli;
 
 import java.util.Scanner;
+import java.util.Arrays;
 
 import tributary.api.TributaryService;
 import tributary.core.TributaryCluster;
@@ -28,17 +29,24 @@ public class TributaryCLI {
     }
 
     private static void handleInput(String input) {
+        if (input.isEmpty()) {
+            return;
+        }
+
         String[] inputArgs = input.split(" ");
         commandType = inputArgs[0];
         classType = inputArgs[1];
 
+        // The config like <topic>, <id>, <type>
+        String[] inputConfig = Arrays.copyOfRange(inputArgs, 2, inputArgs.length);
+
         switch (commandType) {
         case "create":
-            handleCreateInput(inputArgs);
+            handleCreateInput(inputConfig);
             break;
 
         case "show":
-            handleShowInput(inputArgs);
+            handleShowInput(inputConfig);
             break;
 
         case "produce":
@@ -58,26 +66,43 @@ public class TributaryCLI {
         System.out.println();
     }
 
-    private static void handleCreateInput(String[] inputArgs) {
+    private static void handleCreateInput(String[] inputConfig) {
+        String topicId;
+        String topicType;
+        String partitionId;
+        String producerId;
+        String producerAllocation;
+        String consumerGroupId;
+        String consumerId;
+        String consumerGroupRebalancing;
+
         switch (classType) {
         case "topic":
-            String id = inputArgs[2];
-            String type = inputArgs[3];
-            tributary.createTopic(id, type);
+            topicId = inputConfig[0];
+            topicType = inputConfig[1];
+            tributary.createTopic(topicId, topicType);
             break;
         case "partition":
-            String topicId = inputArgs[2];
-            String partitionId = inputArgs[3];
+            topicId = inputConfig[0];
+            partitionId = inputConfig[1];
             tributary.createPartition(topicId, partitionId);
             break;
         case "consumer_group":
-
+            consumerGroupId = inputConfig[0];
+            topicId = inputConfig[1];
+            consumerGroupRebalancing = inputConfig[2];
+            tributary.createConsumerGroup(consumerGroupId, topicId, consumerGroupRebalancing);
             break;
         case "consumer":
-
+            consumerGroupId = inputConfig[0];
+            consumerId = inputConfig[1];
+            tributary.createConsumer(consumerGroupId, consumerId);
             break;
         case "producer":
-
+            producerId = inputConfig[0];
+            topicType = inputConfig[1];
+            producerAllocation = inputConfig[2];
+            tributary.createProducer(producerId, topicType, producerAllocation);
             break;
 
         default:
@@ -86,14 +111,18 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleShowInput(String[] inputArgs) {
+    private static void handleShowInput(String[] inputConfig) {
         switch (classType) {
         case "topic":
-            String id = inputArgs[2];
-            tributary.showTopic(id);
+            String topicId = inputConfig[0];
+            tributary.showTopic(topicId);
             break;
         case "consumer_group":
-
+            String consumerGroupId = inputConfig[0];
+            tributary.showConsumerGroup(consumerGroupId);
+            break;
+        case "all":
+            tributary.showAll();
             break;
         default:
             System.err.println("Invalid Command");

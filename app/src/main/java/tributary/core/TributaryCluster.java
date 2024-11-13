@@ -7,23 +7,45 @@ import java.util.Queue;
 import tributary.api.TributaryService;
 
 public class TributaryCluster implements TributaryService {
+    private List<Producer> producerList = new ArrayList<>();
     private List<Topic> topicList = new ArrayList<>();
+    private List<ConsumerGroup> consumerGroupList = new ArrayList<>();
 
-    private Topic findTopic(String id) {
-        return topicList.stream().filter(topic -> topic.getId().equals(id)).findAny().orElse(null);
+    private void setProducerList(List<Producer> producerList) {
+        this.producerList = producerList;
     }
 
-    public void createTopic(String id, String type) {
-        Topic topic = new Topic(id, type);
-        topicList.add(topic);
-        System.out.println("Topic " + id + " of Type " + type + " created");
+    private void setTopicList(List<Topic> topicList) {
+        this.topicList = topicList;
+    }
+
+    private void setConsumerGroupList(List<ConsumerGroup> consumerGroupList) {
+        this.consumerGroupList = consumerGroupList;
+    }
+
+    public void clearTributaryCluster() {
+        setProducerList(null);
+        setTopicList(null);
+        setConsumerGroupList(null);
+    }
+
+    private Topic findTopic(String id) {
+        return topicList.stream().filter(topic -> topic.getTopicId().equals(id)).findAny().orElse(null);
+    }
+
+    private Producer findProducer(String id) {
+        return producerList.stream().filter(producer -> producer.getProducerId().equals(id)).findAny().orElse(null);
+    }
+
+    private ConsumerGroup findConsumerGroup(String id) {
+        return consumerGroupList.stream().filter(group -> group.getConsumerGroupId().equals(id)).findAny().orElse(null);
     }
 
     public void showTopic(String id) {
         Topic t = findTopic(id);
 
         if (t != null) {
-            System.out.println("Topic: " + t.getId());
+            System.out.println("Topic: " + t.getTopicId());
 
             List<Partition> partitionList = t.getPartitionList();
             if (partitionList.isEmpty()) {
@@ -45,8 +67,56 @@ public class TributaryCluster implements TributaryService {
                 }
             }
         } else {
-            System.out.println("Topic doesn't exist");
+            System.err.println("Topic doesn't exist");
+            return;
         }
+    }
+
+    public void showConsumerGroup(String id) {
+        ConsumerGroup cg = findConsumerGroup(id);
+
+        if (cg != null) {
+            System.out.println("Consumer Group: " + cg.getConsumerGroupId());
+
+            List<Consumer> consumerList = cg.getConsumerList();
+            if (consumerList.isEmpty()) {
+                System.out.println("No consumer");
+            } else {
+                for (Consumer c : consumerList) {
+                    System.out.println(
+                            "Consumer " + c.getConsumerId() + " is receiving events from " + c.getPartitionId());
+                }
+            }
+        } else {
+            System.err.println("Consumer Group doesn't exist");
+            return;
+        }
+    }
+
+    private void showProducer(String id) {
+        Producer p = findProducer(id);
+
+        if (p != null) {
+            System.out.println("Producer: " + p.getProducerId());
+        } else {
+            System.err.println("Producer doesn't exist");
+            return;
+        }
+    }
+
+    public void showAll() {
+        System.out.println("Producers:");
+        producerList.stream().forEach(p -> showProducer(p.getProducerId()));
+        System.out.println("\nTopics:");
+        topicList.stream().forEach(t -> showTopic(t.getTopicId()));
+        System.out.println("\nConsumer Groups:");
+        consumerGroupList.stream().forEach(cg -> showConsumerGroup(cg.getConsumerGroupId()));
+    }
+
+    public void createTopic(String id, String type) {
+        Topic topic = new Topic(id, type);
+        topicList.add(topic);
+        System.out.println("Topic " + id + " of Type " + type + " created");
     }
 
     public void createPartition(String topicId, String partitionId) {
@@ -57,7 +127,57 @@ public class TributaryCluster implements TributaryService {
             partitionList.add(p);
             System.out.println("Partition " + partitionId + " added to Topic " + topicId);
         } else {
-            System.out.println("Topic doesn't exist");
+            System.err.println("Topic doesn't exist");
+            return;
+        }
+    }
+
+    public void createProducer(String producerId, String type, String allocation) {
+        Producer p;
+        switch (allocation) {
+        case "Random":
+            p = new RandomProducer(producerId, type);
+            break;
+        case "Manual":
+            p = new ManualProducer(producerId, type);
+            break;
+        default:
+            System.err.println("Invalid Allocation Method");
+            return;
+        }
+
+        producerList.add(p);
+        System.out.println("Producer " + producerId + " created");
+    }
+
+    public void createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
+        ConsumerGroup cg;
+        if (balancingMethod.equals("Range") || balancingMethod.equals("RoundRobin")) {
+            cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
+        } else {
+            System.err.println("Invalid Balancing Method");
+            return;
+        }
+
+        Topic t = findTopic(topicId);
+        if (t != null) {
+            consumerGroupList.add(cg);
+            System.out.println("Consumer Group " + consumerGroupId + " created");
+        } else {
+            System.err.println("Invalid Topic");
+            return;
+        }
+    }
+
+    public void createConsumer(String consumerGroupId, String consumerId) {
+        ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+        if (cg != null) {
+            Consumer c = new Consumer(consumerGroupId, consumerId);
+            cg.addConsumer(c);
+            System.out.println("Consumer " + consumerId + " added to Consumer Group " + consumerGroupId);
+        } else {
+            System.err.println("Invalid Consumer Group");
+            return;
         }
     }
 }

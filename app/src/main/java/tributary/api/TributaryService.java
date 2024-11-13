@@ -2,19 +2,24 @@ package tributary.api;
 
 public interface TributaryService {
     // Create commands
-    public void createTopic(String id, String type); // Creates a new topic
 
-    public void createPartition(String topicId, String partitionId); // Adds a partition to a topic
+    // Creates a new topic
+    public void createTopic(String id, String type);
 
-    // ConsumerGroup createConsumerGroup(String groupId, String topicId, RebalancingStrategy strategy);
+    // Adds a partition to a topic
+    public void createPartition(String topicId, String partitionId);
+
     // Creates a consumer group
+    public void createConsumerGroup(String groupId, String topicId, String strategy);
 
-    // Consumer createConsumer(String groupId, String consumerId); // Adds a consumer to a group
+    // Adds a consumer to a group
+    public void createConsumer(String groupId, String consumerId);
 
-    // Producer createProducer(String producerId, Class<?> type, AllocationMethod allocation);
     // Creates a producer with a specified allocation
+    public void createProducer(String producerId, String type, String allocation);
 
     // // Delete commands
+    public void clearTributaryCluster();
     // String deleteConsumer(String consumerId); // Deletes a consumer and returns rebalanced group info
 
     // // Produce and consume commands
@@ -25,10 +30,16 @@ public interface TributaryService {
 
     // List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents); // Consumes multiple events
 
-    // // Show information commands
-    public void showTopic(String topicId); // Displays topic info with partitions and events
+    // Show information commands
 
-    // String showConsumerGroup(String groupId); // Displays consumers in a group and their partitions
+    // Displays topic info with partitions and events
+    public void showTopic(String topicId);
+
+    // Show datastore, containing producers, topics, consuemrs
+    public void showAll();
+
+    // Displays consumers in a group and their partitions
+    public void showConsumerGroup(String groupId);
 
     // // Parallel commands
     // Map<String, String> parallelProduce(List<ProduceRequest> requests); // Publishes multiple events in parallel
