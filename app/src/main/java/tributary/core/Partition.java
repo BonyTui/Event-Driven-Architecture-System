@@ -5,10 +5,10 @@ import java.util.Queue;
 
 public class Partition {
     private Queue<Message> messageQueue = new PriorityQueue<Message>();
-    private String id;
+    private String partitionId;
 
-    public Partition(String id) {
-        this.id = id;
+    public Partition(String partitionId) {
+        this.partitionId = partitionId;
     }
 
     public Queue<Message> getMessageQueue() {
@@ -16,6 +16,6 @@ public class Partition {
     }
 
     public String getId() {
-        return id;
+        return partitionId;
     }
 }

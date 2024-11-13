@@ -1,6 +1,7 @@
 package tributary.cli;
 
 import java.util.Scanner;
+import java.util.Arrays;
 
 import tributary.api.TributaryService;
 import tributary.core.TributaryCluster;
@@ -32,13 +33,16 @@ public class TributaryCLI {
         commandType = inputArgs[0];
         classType = inputArgs[1];
 
+        // The config like <topic>, <id>, <type>
+        String[] inputConfig = Arrays.copyOfRange(inputArgs, 2, inputArgs.length);
+
         switch (commandType) {
         case "create":
-            handleCreateInput(inputArgs);
+            handleCreateInput(inputConfig);
             break;
 
         case "show":
-            handleShowInput(inputArgs);
+            handleShowInput(inputConfig);
             break;
 
         case "produce":
@@ -58,16 +62,22 @@ public class TributaryCLI {
         System.out.println();
     }
 
-    private static void handleCreateInput(String[] inputArgs) {
+    private static void handleCreateInput(String[] inputConfig) {
+        String topicId;
+        String topicType;
+        String partitionId;
+        String producerId;
+        String producerAllocation;
+
         switch (classType) {
         case "topic":
-            String id = inputArgs[2];
-            String type = inputArgs[3];
-            tributary.createTopic(id, type);
+            topicId = inputConfig[0];
+            topicType = inputConfig[1];
+            tributary.createTopic(topicId, topicType);
             break;
         case "partition":
-            String topicId = inputArgs[2];
-            String partitionId = inputArgs[3];
+            topicId = inputConfig[0];
+            partitionId = inputConfig[1];
             tributary.createPartition(topicId, partitionId);
             break;
         case "consumer_group":
@@ -77,7 +87,10 @@ public class TributaryCLI {
 
             break;
         case "producer":
-
+            producerId = inputConfig[0];
+            topicType = inputConfig[1];
+            producerAllocation = inputConfig[2];
+            tributary.createProducer(producerId, topicType, producerAllocation);
             break;
 
         default:
@@ -86,14 +99,17 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleShowInput(String[] inputArgs) {
+    private static void handleShowInput(String[] inputConfig) {
         switch (classType) {
         case "topic":
-            String id = inputArgs[2];
+            String id = inputConfig[2];
             tributary.showTopic(id);
             break;
         case "consumer_group":
 
+            break;
+        case "all":
+            tributary.showAll();
             break;
         default:
             System.err.println("Invalid Command");

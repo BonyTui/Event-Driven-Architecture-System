@@ -11,8 +11,8 @@ public interface TributaryService {
 
     // Consumer createConsumer(String groupId, String consumerId); // Adds a consumer to a group
 
-    // Producer createProducer(String producerId, Class<?> type, AllocationMethod allocation);
     // Creates a producer with a specified allocation
+    public void createProducer(String producerId, String type, String allocation);
 
     // // Delete commands
     // String deleteConsumer(String consumerId); // Deletes a consumer and returns rebalanced group info
@@ -25,8 +25,10 @@ public interface TributaryService {
 
     // List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents); // Consumes multiple events
 
-    // // Show information commands
+    // Show information commands
     public void showTopic(String topicId); // Displays topic info with partitions and events
+
+    public void showAll(); // Show datastore, containing producers, topics, consuemrs
 
     // String showConsumerGroup(String groupId); // Displays consumers in a group and their partitions
 

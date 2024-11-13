@@ -4,21 +4,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Topic {
-    private String id;
-    private String type;
+    private String topicId;
+    private String topicType;
     private List<Partition> partitionList = new ArrayList<>();
 
-    public Topic(String id, String type) {
-        this.id = id;
-        this.type = type;
+    public Topic(String topicId, String topicType) {
+        this.topicId = topicId;
+        this.topicType = topicType;
     }
 
-    public String getId() {
-        return id;
+    public String getTopicId() {
+        return topicId;
     }
 
     public String getType() {
-        return type;
+        return topicType;
     }
 
     public List<Partition> getPartitionList() {
