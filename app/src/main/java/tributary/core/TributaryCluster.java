@@ -41,24 +41,25 @@ public class TributaryCluster implements TributaryService {
         return consumerGroupList.stream().filter(group -> group.getConsumerGroupId().equals(id)).findAny().orElse(null);
     }
 
-    public void showTopic(String id) {
+    public String showTopic(String id) {
+        String returnString = "";
         Topic t = findTopic(id);
 
         if (t != null) {
-            System.out.println("Topic: " + t.getTopicId());
+            returnString += ("Topic: " + t.getTopicId() + "\n");
 
             List<Partition> partitionList = t.getPartitionList();
             if (partitionList.isEmpty()) {
-                System.out.println("No partitions");
+                returnString += ("No partitions\n");
             } else {
-                System.out.println("Partitions:");
+                returnString += ("Partitions:\n");
                 for (Partition p : partitionList) {
                     System.out.println(p.getId());
 
                     Queue<Message> messageQueue = p.getMessageQueue();
-                    System.out.println("Messages:");
+                    returnString += ("Messages:\n");
                     if (messageQueue.isEmpty()) {
-                        System.out.println("No messages");
+                        returnString += ("No messages\n");
                     } else {
                         for (Message m : messageQueue) {
                             System.out.println(m.getHeader().getId());
@@ -66,13 +67,14 @@ public class TributaryCluster implements TributaryService {
                     }
                 }
             }
+            return returnString;
         } else {
-            System.err.println("Topic doesn't exist");
-            return;
+            returnString += ("Topic doesn't exist\n");
+            return returnString;
         }
     }
 
-    public void showConsumerGroup(String id) {
+    public String showConsumerGroup(String id) {
         ConsumerGroup cg = findConsumerGroup(id);
 
         if (cg != null) {
@@ -93,7 +95,7 @@ public class TributaryCluster implements TributaryService {
         }
     }
 
-    private void showProducer(String id) {
+    private String showProducer(String id) {
         Producer p = findProducer(id);
 
         if (p != null) {

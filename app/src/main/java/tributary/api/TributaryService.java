@@ -33,13 +33,16 @@ public interface TributaryService {
     // Show information commands
 
     // Displays topic info with partitions and events
-    public void showTopic(String topicId);
+    public String showTopic(String topicId);
 
     // Show datastore, containing producers, topics, consuemrs
-    public void showAll();
+    public String showAll();
 
     // Displays consumers in a group and their partitions
-    public void showConsumerGroup(String groupId);
+    public String showConsumerGroup(String groupId);
+
+    // Displays consumers in a group and their partitions
+    public String showProducer(String groupId);
 
     // // Parallel commands
     // Map<String, String> parallelProduce(List<ProduceRequest> requests); // Publishes multiple events in parallel
