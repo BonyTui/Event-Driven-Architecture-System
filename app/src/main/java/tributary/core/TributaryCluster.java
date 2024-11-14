@@ -2,7 +2,10 @@ package tributary.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import tributary.api.TributaryService;
 
@@ -10,6 +13,13 @@ public class TributaryCluster implements TributaryService {
     private List<Producer> producerList = new ArrayList<>();
     private List<Topic> topicList = new ArrayList<>();
     private List<ConsumerGroup> consumerGroupList = new ArrayList<>();
+
+    private ObjectMapper mapper; // Pretty Printer
+
+    public TributaryCluster() {
+        mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    }
 
     private void setProducerList(List<Producer> producerList) {
         this.producerList = producerList;
@@ -42,68 +52,43 @@ public class TributaryCluster implements TributaryService {
     }
 
     public String showTopic(String id) {
-        String returnString = "";
         Topic t = findTopic(id);
-
-        if (t != null) {
-            returnString += ("Topic: " + t.getTopicId() + "\n");
-
-            List<Partition> partitionList = t.getPartitionList();
-            if (partitionList.isEmpty()) {
-                returnString += ("No partitions\n");
-            } else {
-                returnString += ("Partitions:\n");
-                for (Partition p : partitionList) {
-                    System.out.println(p.getId());
-
-                    Queue<Message> messageQueue = p.getMessageQueue();
-                    returnString += ("Messages:\n");
-                    if (messageQueue.isEmpty()) {
-                        returnString += ("No messages\n");
-                    } else {
-                        for (Message m : messageQueue) {
-                            System.out.println(m.getHeader().getId());
-                        }
-                    }
-                }
-            }
-            return returnString;
-        } else {
-            returnString += ("Topic doesn't exist\n");
-            return returnString;
+        String prettyJson;
+        try {
+            prettyJson = mapper.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            prettyJson = null;
         }
+
+        System.out.println(prettyJson);
+        return prettyJson;
     }
 
     public String showConsumerGroup(String id) {
         ConsumerGroup cg = findConsumerGroup(id);
-
-        if (cg != null) {
-            System.out.println("Consumer Group: " + cg.getConsumerGroupId());
-
-            List<Consumer> consumerList = cg.getConsumerList();
-            if (consumerList.isEmpty()) {
-                System.out.println("No consumer");
-            } else {
-                for (Consumer c : consumerList) {
-                    System.out.println(
-                            "Consumer " + c.getConsumerId() + " is receiving events from " + c.getPartitionId());
-                }
-            }
-        } else {
-            System.err.println("Consumer Group doesn't exist");
-            return;
+        String prettyJson;
+        try {
+            prettyJson = mapper.writeValueAsString(cg);
+        } catch (JsonProcessingException e) {
+            prettyJson = null;
         }
+
+        System.out.println(prettyJson);
+        return prettyJson;
     }
 
-    private String showProducer(String id) {
+    public String showProducer(String id) {
         Producer p = findProducer(id);
 
-        if (p != null) {
-            System.out.println("Producer: " + p.getProducerId());
-        } else {
-            System.err.println("Producer doesn't exist");
-            return;
+        String prettyJson;
+        try {
+            prettyJson = mapper.writeValueAsString(p);
+        } catch (JsonProcessingException e) {
+            prettyJson = null;
         }
+
+        System.out.println(prettyJson);
+        return prettyJson;
     }
 
     public void showAll() {
@@ -115,57 +100,55 @@ public class TributaryCluster implements TributaryService {
         consumerGroupList.stream().forEach(cg -> showConsumerGroup(cg.getConsumerGroupId()));
     }
 
-    public void createTopic(String id, String type) {
+    public Topic createTopic(String id, String type) {
         Topic topic = new Topic(id, type);
         topicList.add(topic);
         System.out.println("Topic " + id + " of Type " + type + " created");
+        return topic;
     }
 
-    public void createPartition(String topicId, String partitionId) {
+    public Partition createPartition(String topicId, String partitionId) {
         Topic t = findTopic(topicId);
         if (t != null) {
             List<Partition> partitionList = t.getPartitionList();
             Partition p = new Partition(partitionId);
             partitionList.add(p);
             System.out.println("Partition " + partitionId + " added to Topic " + topicId);
+            return p;
         } else {
             System.err.println("Topic doesn't exist");
-            return;
+            return null;
         }
+
     }
 
-    public void createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
-        ConsumerGroup cg;
+    public ConsumerGroup createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         if (balancingMethod.equals("Range") || balancingMethod.equals("RoundRobin")) {
-            cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
-        } else {
-            System.err.println("Invalid Balancing Method");
-            return;
-        }
-
-        Topic t = findTopic(topicId);
-        if (t != null) {
+            ConsumerGroup cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
             consumerGroupList.add(cg);
             System.out.println("Consumer Group " + consumerGroupId + " created");
+            return cg;
         } else {
-            System.err.println("Invalid Topic");
-            return;
+            System.err.println("Invalid Balancing Method");
+            return null;
         }
+
     }
 
-    public void createConsumer(String consumerGroupId, String consumerId) {
+    public Consumer createConsumer(String consumerGroupId, String consumerId) {
         ConsumerGroup cg = findConsumerGroup(consumerGroupId);
         if (cg != null) {
             Consumer c = new Consumer(consumerGroupId, consumerId);
             cg.addConsumer(c);
             System.out.println("Consumer " + consumerId + " added to Consumer Group " + consumerGroupId);
+            return c;
         } else {
             System.err.println("Invalid Consumer Group");
-            return;
+            return null;
         }
     }
 
-    public void createProducer(String producerId, String type, String allocation) {
+    public Producer createProducer(String producerId, String type, String allocation) {
         Producer p;
         switch (allocation) {
         case "Random":
@@ -176,10 +159,11 @@ public class TributaryCluster implements TributaryService {
             break;
         default:
             System.out.println("Invalid Allocation Method");
-            return;
+            return null;
         }
 
         producerList.add(p);
         System.out.println("Producer " + producerId + " created");
+        return p;
     }
 }

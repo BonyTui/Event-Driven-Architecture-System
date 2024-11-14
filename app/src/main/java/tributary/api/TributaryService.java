@@ -1,25 +1,34 @@
 package tributary.api;
 
+import tributary.core.ConsumerGroup;
+import tributary.core.Partition;
+import tributary.core.Producer;
+import tributary.core.Topic;
+import tributary.core.Consumer;
+
 public interface TributaryService {
     // Create commands
 
     // Creates a new topic
-    public void createTopic(String id, String type);
+    public Topic createTopic(String id, String type);
 
     // Adds a partition to a topic
-    public void createPartition(String topicId, String partitionId);
+    public Partition createPartition(String topicId, String partitionId);
 
     // Creates a consumer group
-    public void createConsumerGroup(String groupId, String topicId, String strategy);
+    public ConsumerGroup createConsumerGroup(String groupId, String topicId, String strategy);
 
     // Adds a consumer to a group
-    public void createConsumer(String groupId, String consumerId);
+    public Consumer createConsumer(String groupId, String consumerId);
 
     // Creates a producer with a specified allocation
-    public void createProducer(String producerId, String type, String allocation);
+    public Producer createProducer(String producerId, String type, String allocation);
 
     // // Delete commands
+
+    // Clear the entire datastore
     public void clearTributaryCluster();
+
     // String deleteConsumer(String consumerId); // Deletes a consumer and returns rebalanced group info
 
     // // Produce and consume commands
@@ -32,11 +41,11 @@ public interface TributaryService {
 
     // Show information commands
 
+    // Show datastore, containing producers, topics, consuemrs
+    public void showAll();
+
     // Displays topic info with partitions and events
     public String showTopic(String topicId);
-
-    // Show datastore, containing producers, topics, consuemrs
-    public String showAll();
 
     // Displays consumers in a group and their partitions
     public String showConsumerGroup(String groupId);

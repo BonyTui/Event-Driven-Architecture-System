@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConsumerGroup {
-    private List<Consumer> consumerList = new ArrayList<>();
     private String consumerGroupId;
     private String topicId;
     private String balancingMethod;
+    private List<Consumer> consumerList = new ArrayList<>();
 
     public ConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         this.consumerGroupId = consumerGroupId;
