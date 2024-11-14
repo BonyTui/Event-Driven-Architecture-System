@@ -17,5 +17,5 @@ public abstract class Producer {
         return topicType;
     }
 
-    public abstract void assignMessage();
+    public abstract void assignEvent();
 }

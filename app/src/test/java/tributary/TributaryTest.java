@@ -394,6 +394,87 @@ public class TributaryTest {
         assertNotEquals(c3, null);
     }
 
+    @Test
+    public void deleteConsumer() {
+        String consumerGroupId = "consumer_group1";
+        String topicType = "type1";
+        String balancingStrategy = "RoundRobin";
+        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        tributary.createConsumer(consumerGroupId, consumerId);
+
+        tributary.deleteConsumer(consumerId);
+
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(cg);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        String actualResult = tributary.showConsumerGroup(consumerGroupId);
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void deleteInvalidConsumer() {
+        String consumerGroupId = "consumer_group1";
+        String topicType = "type1";
+        String balancingStrategy = "RoundRobin";
+        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        tributary.createConsumer(consumerGroupId, consumerId);
+
+        String invalidConsumerId = "consumer10";
+        tributary.deleteConsumer(invalidConsumerId);
+
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(cg);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        String actualResult = tributary.showConsumerGroup(consumerGroupId);
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void deleteConsumers() {
+        String consumerGroupId = "consumer_group1";
+        String topicType = "type1";
+        String balancingStrategy = "RoundRobin";
+        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        Consumer c = tributary.createConsumer(consumerGroupId, consumerId);
+
+        String consumerId2 = "consumer2";
+        Consumer c2 = tributary.createConsumer(consumerGroupId, consumerId2);
+
+        String consumerId3 = "consumer3";
+        Consumer c3 = tributary.createConsumer(consumerGroupId, consumerId3);
+
+        tributary.deleteConsumer(consumerId);
+        tributary.deleteConsumer(consumerId2);
+        tributary.deleteConsumer(consumerId3);
+
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(cg);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        String actualResult = tributary.showConsumerGroup(consumerGroupId);
+
+        assertEquals(expectedResult, actualResult);
+    }
+
     // Integration Tests
     @Test
     public void createAll() {

@@ -4,18 +4,18 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class Partition {
-    private Queue<Message> messageQueue = new PriorityQueue<Message>();
     private String partitionId;
+    private Queue<Event> eventQueue = new PriorityQueue<Event>();
 
     public Partition(String partitionId) {
         this.partitionId = partitionId;
     }
 
-    public Queue<Message> getMessageQueue() {
-        return messageQueue;
+    public Queue<Event> getMessageQueue() {
+        return eventQueue;
     }
 
-    public String getId() {
+    public String getPartitionId() {
         return partitionId;
     }
 }

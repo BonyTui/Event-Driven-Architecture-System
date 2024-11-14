@@ -29,10 +29,11 @@ public interface TributaryService {
     // Clear the entire datastore
     public void clearTributaryCluster();
 
-    // String deleteConsumer(String consumerId); // Deletes a consumer and returns rebalanced group info
+    // Deletes a consumer and returns rebalanced group info
+    public void deleteConsumer(String consumerId);
 
-    // // Produce and consume commands
-    // String produceEvent(String producerId, String topicId, String eventFile, String partitionId);
+    // Produce and consume commands
+    public String produceEvent(String producerId, String topicId, String eventContent, String partitionId);
     // Publishes an event from JSON file
 
     // Event consumeEvent(String consumerId, String partitionId); // Consumes a single event from a partition

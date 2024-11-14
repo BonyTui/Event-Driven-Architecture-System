@@ -5,7 +5,7 @@ public class RandomProducer extends Producer {
         super(producerId, topicType);
     }
 
-    public void assignMessage() {
+    public void assignEvent() {
 
     }
 

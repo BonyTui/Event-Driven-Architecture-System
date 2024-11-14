@@ -58,7 +58,7 @@ public class TributaryCLI {
             break;
 
         case "delete":
-
+            handleDeleteInput(inputConfig);
             break;
         default:
             break;
@@ -123,6 +123,18 @@ public class TributaryCLI {
             break;
         case "all":
             tributary.showAll();
+            break;
+        default:
+            System.err.println("Invalid Command");
+            break;
+        }
+    }
+
+    private static void handleDeleteInput(String[] inputConfig) {
+        switch (classType) {
+        case "consumer":
+            String consumerId = inputConfig[0];
+            tributary.deleteConsumer(consumerId);
             break;
         default:
             System.err.println("Invalid Command");

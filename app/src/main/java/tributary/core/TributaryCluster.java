@@ -2,6 +2,7 @@ package tributary.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,12 +44,36 @@ public class TributaryCluster implements TributaryService {
         return topicList.stream().filter(topic -> topic.getTopicId().equals(id)).findAny().orElse(null);
     }
 
+    private Partition findPartition(String id) {
+        Partition p;
+        for (Topic t : topicList) {
+            p = t.getPartitionList().stream().filter(partition -> partition.getPartitionId().equals(id)).findAny()
+                    .orElse(null);
+            if (p != null) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     private Producer findProducer(String id) {
         return producerList.stream().filter(producer -> producer.getProducerId().equals(id)).findAny().orElse(null);
     }
 
     private ConsumerGroup findConsumerGroup(String id) {
         return consumerGroupList.stream().filter(group -> group.getConsumerGroupId().equals(id)).findAny().orElse(null);
+    }
+
+    private Consumer findConsumer(String id) {
+        Consumer c;
+        for (ConsumerGroup cg : consumerGroupList) {
+            c = cg.getConsumerList().stream().filter(consumer -> consumer.getConsumerId().equals(id)).findAny()
+                    .orElse(null);
+            if (c != null) {
+                return c;
+            }
+        }
+        return null;
     }
 
     public String showTopic(String id) {
@@ -165,5 +190,34 @@ public class TributaryCluster implements TributaryService {
         producerList.add(p);
         System.out.println("Producer " + producerId + " created");
         return p;
+    }
+
+    public void deleteConsumer(String consumerId) {
+        Consumer c = findConsumer(consumerId);
+        if (c != null) {
+            String consumerGroupId = c.getConsumerGroupId();
+            ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+            cg.getConsumerList().remove(c);
+            System.out.println("Consumer " + consumerId + " was deleted from Consumer Group " + consumerGroupId);
+            System.out.println("Updated Consumer Group " + consumerGroupId);
+            showConsumerGroup(consumerGroupId);
+        } else {
+            System.out.println("Invalid Consumer");
+            return;
+        }
+    }
+
+    public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId) {
+        String eventID = UUID.randomUUID().toString();
+        String headerID = UUID.randomUUID().toString();
+        Header header = new Header(headerID)
+        Event event = new Event(eventID, header, partitionId, eventContent);
+
+        Producer producer = findProducer(producerId);
+        Topic topic = findTopic(topicId);
+        Partition partition = findPartition(partitionId);
+
+        System.out.println("Event " + eventID + " is part of Partition " + partitionId);
+        return event;
     }
 }

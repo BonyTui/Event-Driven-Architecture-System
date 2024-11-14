@@ -1,8 +1,8 @@
 package tributary.core;
 
 public class Consumer {
-    private String consumerGroupId;
     private String consumerId;
+    private String consumerGroupId;
     private String partitionId;
 
     public Consumer(String consumerGroupId, String consumerId) {
