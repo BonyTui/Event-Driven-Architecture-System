@@ -1,13 +1,27 @@
 package tributary.core;
 
-public class Header {
-    private String id;
+import java.time.LocalDateTime;
 
-    public Header(String id) {
-        this.id = id;
+public class Header {
+    private String headerId;
+    private LocalDateTime dateTimeCreated;
+    private String payloadType;
+
+    public Header(String headerId) {
+        dateTimeCreated = java.time.LocalDateTime.now();
+        this.headerId = headerId;
+        this.payloadType = "String";
     }
 
-    public String getId() {
-        return id;
+    public String getHeaderId() {
+        return headerId;
+    }
+
+    public LocalDateTime getDateTimeCreated() {
+        return dateTimeCreated;
+    }
+
+    public String getPayloadType() {
+        return payloadType;
     }
 }

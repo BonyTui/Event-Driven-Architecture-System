@@ -210,13 +210,14 @@ public class TributaryCluster implements TributaryService {
     public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId) {
         String eventID = UUID.randomUUID().toString();
         String headerID = UUID.randomUUID().toString();
-        Header header = new Header(headerID)
+        Header header = new Header(headerID);
         Event event = new Event(eventID, header, partitionId, eventContent);
 
         Producer producer = findProducer(producerId);
         Topic topic = findTopic(topicId);
-        Partition partition = findPartition(partitionId);
+        List<Partition> partitionList = topic.getPartitionList();
 
+        producer.assignEvent(event, partitionList, partitionId);
         System.out.println("Event " + eventID + " is part of Partition " + partitionId);
         return event;
     }

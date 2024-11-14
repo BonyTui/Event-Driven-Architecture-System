@@ -555,4 +555,38 @@ public class TributaryTest {
         assertNotEquals(null, consumer2);
     }
 
+    @Test
+    public void produceEventManual() {
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Manual";
+        Producer producer = tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        Topic t = tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        Partition partition = tributary.createPartition(topicId, partitionId);
+
+        String eventContent = "hi";
+
+        tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        String actualResult = tributary.showTopic(topicId);
+
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void produceEventRandom() {
+
+    }
+
 }

@@ -1,6 +1,7 @@
 package tributary.api;
 
 import tributary.core.ConsumerGroup;
+import tributary.core.Event;
 import tributary.core.Partition;
 import tributary.core.Producer;
 import tributary.core.Topic;
@@ -33,8 +34,7 @@ public interface TributaryService {
     public void deleteConsumer(String consumerId);
 
     // Produce and consume commands
-    public String produceEvent(String producerId, String topicId, String eventContent, String partitionId);
-    // Publishes an event from JSON file
+    public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId);
 
     // Event consumeEvent(String consumerId, String partitionId); // Consumes a single event from a partition
 

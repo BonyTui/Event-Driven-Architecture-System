@@ -2,16 +2,17 @@ package tributary.core;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.LinkedList;
 
 public class Partition {
     private String partitionId;
-    private Queue<Event> eventQueue = new PriorityQueue<Event>();
+    private Queue<Event> eventQueue = new LinkedList<>();
 
     public Partition(String partitionId) {
         this.partitionId = partitionId;
     }
 
-    public Queue<Event> getMessageQueue() {
+    public Queue<Event> getEventQueue() {
         return eventQueue;
     }
 
