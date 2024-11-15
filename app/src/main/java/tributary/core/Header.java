@@ -1,14 +1,12 @@
 package tributary.core;
 
-import java.time.LocalDateTime;
-
 public class Header {
     private String headerId;
-    private LocalDateTime dateTimeCreated;
+    private long dateTimeCreated;
     private String payloadType;
 
     public Header(String headerId) {
-        dateTimeCreated = java.time.LocalDateTime.now();
+        dateTimeCreated = System.currentTimeMillis();
         this.headerId = headerId;
         this.payloadType = "String";
     }
@@ -17,7 +15,7 @@ public class Header {
         return headerId;
     }
 
-    public LocalDateTime getDateTimeCreated() {
+    public long getDateTimeCreated() {
         return dateTimeCreated;
     }
 

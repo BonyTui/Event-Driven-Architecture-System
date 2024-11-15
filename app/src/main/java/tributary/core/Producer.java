@@ -15,9 +15,13 @@ public abstract class Producer {
         return producerId;
     }
 
+    public String getTopicType() {
+        return topicType;
+    }
+
     public String getType() {
         return topicType;
     }
 
-    public abstract void assignEvent(Event event, List<Partition> partitionList, String partitionId);
+    public abstract boolean assignEvent(Event event, List<Partition> partitionList, String partitionId);
 }

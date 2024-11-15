@@ -50,11 +50,11 @@ public class TributaryCLI {
             break;
 
         case "produce":
-
+            handleProduceInput(inputConfig);
             break;
 
         case "consume":
-
+            handleConsumeInput(inputConfig);
             break;
 
         case "delete":
@@ -135,6 +135,43 @@ public class TributaryCLI {
         case "consumer":
             String consumerId = inputConfig[0];
             tributary.deleteConsumer(consumerId);
+            break;
+        default:
+            System.err.println("Invalid Command");
+            break;
+        }
+    }
+
+    private static void handleProduceInput(String[] inputConfig) {
+        switch (classType) {
+        case "event":
+            String producerId = inputConfig[0];
+            String topicId = inputConfig[1];
+            String eventContent = inputConfig[2];
+            String partitionId = inputConfig[3];
+            tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+            break;
+        default:
+            System.err.println("Invalid Command");
+            break;
+        }
+    }
+
+    private static void handleConsumeInput(String[] inputConfig) {
+        String consumerId;
+        String partitionId;
+        String numberOfEvents;
+        switch (classType) {
+        case "event":
+            consumerId = inputConfig[0];
+            partitionId = inputConfig[1];
+            tributary.consumeEvent(consumerId, partitionId);
+            break;
+        case "events":
+            consumerId = inputConfig[0];
+            partitionId = inputConfig[1];
+            numberOfEvents = inputConfig[2];
+            tributary.consumeEvents(consumerId, partitionId, Integer.parseInt(numberOfEvents));
             break;
         default:
             System.err.println("Invalid Command");

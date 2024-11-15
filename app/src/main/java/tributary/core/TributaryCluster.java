@@ -76,6 +76,7 @@ public class TributaryCluster implements TributaryService {
         return null;
     }
 
+    @Override
     public String showTopic(String id) {
         Topic t = findTopic(id);
         String prettyJson;
@@ -89,6 +90,7 @@ public class TributaryCluster implements TributaryService {
         return prettyJson;
     }
 
+    @Override
     public String showConsumerGroup(String id) {
         ConsumerGroup cg = findConsumerGroup(id);
         String prettyJson;
@@ -102,6 +104,7 @@ public class TributaryCluster implements TributaryService {
         return prettyJson;
     }
 
+    @Override
     public String showProducer(String id) {
         Producer p = findProducer(id);
 
@@ -125,6 +128,7 @@ public class TributaryCluster implements TributaryService {
         consumerGroupList.stream().forEach(cg -> showConsumerGroup(cg.getConsumerGroupId()));
     }
 
+    @Override
     public Topic createTopic(String id, String type) {
         Topic topic = new Topic(id, type);
         topicList.add(topic);
@@ -132,6 +136,7 @@ public class TributaryCluster implements TributaryService {
         return topic;
     }
 
+    @Override
     public Partition createPartition(String topicId, String partitionId) {
         Topic t = findTopic(topicId);
         if (t != null) {
@@ -147,6 +152,7 @@ public class TributaryCluster implements TributaryService {
 
     }
 
+    @Override
     public ConsumerGroup createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         if (balancingMethod.equals("Range") || balancingMethod.equals("RoundRobin")) {
             ConsumerGroup cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
@@ -160,6 +166,7 @@ public class TributaryCluster implements TributaryService {
 
     }
 
+    @Override
     public Consumer createConsumer(String consumerGroupId, String consumerId) {
         ConsumerGroup cg = findConsumerGroup(consumerGroupId);
         if (cg != null) {
@@ -173,6 +180,7 @@ public class TributaryCluster implements TributaryService {
         }
     }
 
+    @Override
     public Producer createProducer(String producerId, String type, String allocation) {
         Producer p;
         switch (allocation) {
@@ -183,7 +191,7 @@ public class TributaryCluster implements TributaryService {
             p = new ManualProducer(producerId, type);
             break;
         default:
-            System.out.println("Invalid Allocation Method");
+            System.err.println("Invalid Allocation Method");
             return null;
         }
 
@@ -192,6 +200,7 @@ public class TributaryCluster implements TributaryService {
         return p;
     }
 
+    @Override
     public void deleteConsumer(String consumerId) {
         Consumer c = findConsumer(consumerId);
         if (c != null) {
@@ -202,11 +211,12 @@ public class TributaryCluster implements TributaryService {
             System.out.println("Updated Consumer Group " + consumerGroupId);
             showConsumerGroup(consumerGroupId);
         } else {
-            System.out.println("Invalid Consumer");
+            System.err.println("Invalid Consumer");
             return;
         }
     }
 
+    @Override
     public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId) {
         String eventID = UUID.randomUUID().toString();
         String headerID = UUID.randomUUID().toString();
@@ -215,10 +225,54 @@ public class TributaryCluster implements TributaryService {
 
         Producer producer = findProducer(producerId);
         Topic topic = findTopic(topicId);
+
+        if (producer == null) {
+            System.err.println("Invalid Producer");
+            return null;
+        }
+
+        if (topic == null) {
+            System.err.println("Invalid Topic");
+            return null;
+        }
+
         List<Partition> partitionList = topic.getPartitionList();
 
-        producer.assignEvent(event, partitionList, partitionId);
+        Boolean assigned = producer.assignEvent(event, partitionList, partitionId);
+        if (!assigned) {
+            System.err.println("Invalid Assignment");
+            return null;
+        }
         System.out.println("Event " + eventID + " is part of Partition " + partitionId);
         return event;
+    }
+
+    @Override
+    public Event consumeEvent(String consumerId, String partitionId) {
+        Consumer c = findConsumer(consumerId);
+        Partition p = findPartition(partitionId);
+
+        if (c == null) {
+            System.err.println("Invalid Consumer");
+            return null;
+        }
+
+        if (p == null) {
+            System.err.println("Invalid Partition");
+            return null;
+        }
+
+        Event event = c.consume(p);
+        return event;
+    }
+
+    @Override
+    public List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents) {
+        Consumer c = findConsumer(consumerId);
+        for (int i = 0; i < numberOfEvents; i++) {
+            consumeEvent(consumerId, partitionId);
+        }
+        List<Event> consumedEvents = c.getConsumedEventList();
+        return consumedEvents;
     }
 }

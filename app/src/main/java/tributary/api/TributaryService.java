@@ -1,5 +1,6 @@
 package tributary.api;
 
+import java.util.List;
 import tributary.core.ConsumerGroup;
 import tributary.core.Event;
 import tributary.core.Partition;
@@ -8,7 +9,7 @@ import tributary.core.Topic;
 import tributary.core.Consumer;
 
 public interface TributaryService {
-    // Create commands
+    ///////////////////// Create commands /////////////////////
 
     // Creates a new topic
     public Topic createTopic(String id, String type);
@@ -25,7 +26,7 @@ public interface TributaryService {
     // Creates a producer with a specified allocation
     public Producer createProducer(String producerId, String type, String allocation);
 
-    // // Delete commands
+    ///////////////////// Delete commands /////////////////////
 
     // Clear the entire datastore
     public void clearTributaryCluster();
@@ -36,11 +37,13 @@ public interface TributaryService {
     // Produce and consume commands
     public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId);
 
-    // Event consumeEvent(String consumerId, String partitionId); // Consumes a single event from a partition
+    // Consumes a single event from a partition
+    public Event consumeEvent(String consumerId, String partitionId);
 
-    // List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents); // Consumes multiple events
+    // Consumes multiple events
+    public List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents);
 
-    // Show information commands
+    ///////////////////// Show commands /////////////////////
 
     // Show datastore, containing producers, topics, consuemrs
     public void showAll();

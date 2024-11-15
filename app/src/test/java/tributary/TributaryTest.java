@@ -1,20 +1,26 @@
 package tributary;
 
-import tributary.core.*;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import org.junit.jupiter.api.Test;
-
 import tributary.api.TributaryService;
+import tributary.core.Consumer;
+import tributary.core.ConsumerGroup;
+import tributary.core.Event;
+import tributary.core.Partition;
+import tributary.core.Producer;
+import tributary.core.Topic;
+import tributary.core.TributaryCluster;
 
 public class TributaryTest {
     private TributaryService tributary;
@@ -560,7 +566,7 @@ public class TributaryTest {
         String producerId = "producer1";
         String topicType = "type1";
         String allocationType = "Manual";
-        Producer producer = tributary.createProducer(producerId, topicType, allocationType);
+        tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
         Topic t = tributary.createTopic(topicId, topicType);
@@ -568,9 +574,9 @@ public class TributaryTest {
         String partitionId = "partition1";
         Partition partition = tributary.createPartition(topicId, partitionId);
 
-        String eventContent = "hi";
+        String eventContent = "event1";
 
-        tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+        Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
 
         String expectedResult;
         try {
@@ -582,11 +588,268 @@ public class TributaryTest {
         String actualResult = tributary.showTopic(topicId);
 
         assertEquals(expectedResult, actualResult);
+        assertNotEquals(t, null);
+        assertNotEquals(partition, null);
+        assertNotEquals(event, null);
     }
 
     @Test
     public void produceEventRandom() {
+        // Initialize identifiers and content
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Random";
 
+        // Create producer with "Random" allocation
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        Topic t = tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        Partition partition = tributary.createPartition(topicId, partitionId);
+
+        String eventContent = "event1";
+
+        // Produce an event with random allocation
+        Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+
+        // Use ObjectMapper to serialize the topic to JSON
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        // Get the actual result by displaying the topic
+        String actualResult = tributary.showTopic(topicId);
+
+        // Assertions
+        assertEquals(expectedResult, actualResult);
+        assertNotEquals(t, null);
+        assertNotEquals(partition, null);
+        assertNotEquals(event, null);
     }
 
+    @Test
+    public void produceInvalidEvent() {
+        // Initialize identifiers and content
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Manual";
+
+        // Create producer with "Random" allocation
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        String eventContent = "event1";
+
+        // Produce an event with random allocation
+        String invalidProducerId = "producer10";
+        String invalidTopicId = "topic10";
+        String invalidPartitionId = "partition10";
+        Event event = tributary.produceEvent(invalidProducerId, topicId, eventContent, partitionId);
+        assertEquals(event, null);
+        event = tributary.produceEvent(producerId, invalidTopicId, eventContent, partitionId);
+        assertEquals(event, null);
+        event = tributary.produceEvent(producerId, topicId, eventContent, invalidPartitionId);
+        assertEquals(event, null);
+    }
+
+    @Test
+    public void produceEventsManual() {
+        // The ordering themselves are tested through CLI and manually checking
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Manual";
+
+        // Set up producer, topic, and partition
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        Topic t = tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        Partition partition = tributary.createPartition(topicId, partitionId);
+
+        // Produce 3 events with "Manual" allocation
+        for (int i = 1; i <= 3; i++) {
+            String eventContent = "event" + i;
+            Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+            assertNotEquals(event, null); // Ensure each event is created successfully
+        }
+
+        // Serialize topic to JSON
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        // Get the actual result and perform assertions
+        String actualResult = tributary.showTopic(topicId);
+        assertEquals(expectedResult, actualResult);
+        assertNotEquals(t, null);
+        assertNotEquals(partition, null);
+    }
+
+    @Test
+    public void produceEventsRandom() {
+        // The ordering themselves are tested through CLI and manually checking
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Random";
+
+        // Set up producer, topic, and partition
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        Topic t = tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        Partition partition = tributary.createPartition(topicId, partitionId);
+
+        // Produce 3 events with "Random" allocation
+        for (int i = 1; i <= 3; i++) {
+            String eventContent = "event" + i;
+            Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+            assertNotEquals(event, null); // Ensure each event is created successfully
+        }
+
+        // Serialize topic to JSON
+        String expectedResult;
+        try {
+            expectedResult = mapper.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            expectedResult = null;
+        }
+
+        // Get the actual result and perform assertions
+        String actualResult = tributary.showTopic(topicId);
+        assertEquals(expectedResult, actualResult);
+        assertNotEquals(t, null);
+        assertNotEquals(partition, null);
+    }
+
+    @Test
+    public void consumeEvent() {
+        // Initialize identifiers and content
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Random";
+
+        // Create producer with "Random" allocation
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        String eventContent = "event1";
+
+        // Produce an event with random allocation
+        Event producedEvent = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+
+        // Consume that event
+        String consumerGroupId = "consumer_group1";
+        String balancingStrategy = "RoundRobin";
+        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        tributary.createConsumer(consumerGroupId, consumerId);
+        Event consumedEvent = tributary.consumeEvent(consumerId, partitionId);
+
+        // Assertions
+        assertEquals(producedEvent, consumedEvent);
+    }
+
+    @Test
+    public void consumeInvalidEvent() {
+        // Initialize identifiers and content
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Random";
+
+        // Create producer with "Random" allocation
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        String eventContent = "event1";
+
+        // Produce an event with random allocation
+        Event producedEvent = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+
+        // Consume that event
+        String consumerGroupId = "consumer_group1";
+        String balancingStrategy = "RoundRobin";
+        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        tributary.createConsumer(consumerGroupId, consumerId);
+        String invalidPartitionId = "partition10";
+        Event consumedEvent = tributary.consumeEvent(consumerId, invalidPartitionId);
+        assertEquals(null, consumedEvent);
+        String invalidConsumerId = "consumer10";
+        consumedEvent = tributary.consumeEvent(invalidConsumerId, partitionId);
+        assertEquals(null, consumedEvent);
+
+        // Assertions
+        assertNotEquals(producedEvent, consumedEvent);
+    }
+
+    @Test
+    public void consumeEvents() {
+        // Initialize identifiers and content
+        String producerId = "producer1";
+        String topicType = "type1";
+        String allocationType = "Random";
+
+        // Create producer with "Random" allocation
+        tributary.createProducer(producerId, topicType, allocationType);
+
+        String topicId = "topic1";
+        tributary.createTopic(topicId, topicType);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        // Produce multiple events with random allocation
+        String eventContent1 = "event1";
+        String eventContent2 = "event2";
+        String eventContent3 = "event3";
+        Event producedEvent1 = tributary.produceEvent(producerId, topicId, eventContent1, partitionId);
+        Event producedEvent2 = tributary.produceEvent(producerId, topicId, eventContent2, partitionId);
+        Event producedEvent3 = tributary.produceEvent(producerId, topicId, eventContent3, partitionId);
+
+        // Consume the specified number of events
+        String consumerGroupId = "consumer_group1";
+        String balancingStrategy = "RoundRobin";
+        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+
+        String consumerId = "consumer1";
+        tributary.createConsumer(consumerGroupId, consumerId);
+
+        int numberOfEventsToConsume = 3;
+        List<Event> consumedEvents = tributary.consumeEvents(consumerId, partitionId, numberOfEventsToConsume);
+
+        // Assertions
+        assertEquals(numberOfEventsToConsume, consumedEvents.size());
+        assertEquals(producedEvent1, consumedEvents.get(0));
+        assertEquals(producedEvent2, consumedEvents.get(1));
+        assertEquals(producedEvent3, consumedEvents.get(2));
+    }
 }

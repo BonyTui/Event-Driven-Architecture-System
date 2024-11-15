@@ -16,4 +16,17 @@ public class Event {
     public Header getHeader() {
         return header;
     }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
 }

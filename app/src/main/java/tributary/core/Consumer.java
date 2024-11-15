@@ -1,13 +1,24 @@
 package tributary.core;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class Consumer {
     private String consumerId;
     private String consumerGroupId;
     private String partitionId;
+    private List<Event> consumedEventList = new ArrayList<>();
 
     public Consumer(String consumerGroupId, String consumerId) {
         this.consumerGroupId = consumerGroupId;
         this.consumerId = consumerId;
+    }
+
+    public Event consume(Partition p) {
+        Event event = p.getEventQueue().remove();
+        setPartitionId(p.getPartitionId());
+        consumedEventList.add(event);
+        return event;
     }
 
     public String getConsumerGroupId() {
@@ -24,5 +35,9 @@ public class Consumer {
 
     public void setPartitionId(String partitionId) {
         this.partitionId = partitionId;
+    }
+
+    public List<Event> getConsumedEventList() {
+        return consumedEventList;
     }
 }

@@ -1,6 +1,5 @@
 package tributary.core;
 
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.LinkedList;
 

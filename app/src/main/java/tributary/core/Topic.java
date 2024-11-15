@@ -13,6 +13,10 @@ public class Topic {
         this.topicType = topicType;
     }
 
+    public String getTopicType() {
+        return topicType;
+    }
+
     public String getTopicId() {
         return topicId;
     }

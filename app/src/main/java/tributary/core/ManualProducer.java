@@ -11,10 +11,16 @@ public class ManualProducer extends Producer {
      * @pre: partitionId is valid
      * @post: event gets added to that partition
      */
-    public void assignEvent(Event event, List<Partition> partitionList, String partitionId) {
+    @Override
+    public boolean assignEvent(Event event, List<Partition> partitionList, String partitionId) {
         Partition p = partitionList.stream().filter(partition -> partition.getPartitionId().equals(partitionId))
                 .findAny().orElse(null);
 
+        if (p == null) {
+            return false;
+        }
+
         p.getEventQueue().add(event);
+        return true;
     }
 }
