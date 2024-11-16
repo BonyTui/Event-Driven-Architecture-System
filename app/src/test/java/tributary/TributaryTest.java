@@ -2,6 +2,8 @@ package tributary;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.List;
 
@@ -55,6 +57,16 @@ public class TributaryTest {
         String actualResult = tributary.showTopic(topicId);
 
         assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void createInvalidTopic() {
+        String topicId = "topic1";
+        String topicType = "type1";
+        tributary.createTopic(topicId, topicType);
+        Topic duplicatedTopic = tributary.createTopic(topicId, topicType);
+
+        assertEquals(duplicatedTopic, null);
     }
 
     @Test
@@ -122,6 +134,8 @@ public class TributaryTest {
         String partitionId = "partition1";
         String invalidTopicId = "topic10";
         Partition p = tributary.createPartition(invalidTopicId, partitionId);
+        Partition validPartition = tributary.createPartition(topicId, partitionId);
+        Partition duplicatedPartition = tributary.createPartition(topicId, partitionId);
 
         String expectedResult;
         try {
@@ -134,6 +148,8 @@ public class TributaryTest {
 
         assertEquals(expectedResult, actualResult);
         assertEquals(null, p);
+        assertNotEquals(validPartition, null);
+        assertEquals(duplicatedPartition, null);
     }
 
     @Test
@@ -187,9 +203,13 @@ public class TributaryTest {
     @Test
     public void createInvalidProducer() {
         String producerId = "producer1";
+        String producerId2 = "producer2";
         String topicType = "type1";
-        String allocationType = "InvalidAllocationType";
-        Producer p = tributary.createProducer(producerId, topicType, allocationType);
+        String allocationType = "Random";
+        String invalidAllocationType = "InvalidAllocationType";
+        Producer p = tributary.createProducer(producerId, topicType, invalidAllocationType);
+        Producer validProducer = tributary.createProducer(producerId2, topicType, allocationType);
+        Producer duplicatedProducer = tributary.createProducer(producerId2, topicType, allocationType);
 
         String expectedResult;
         try {
@@ -202,6 +222,8 @@ public class TributaryTest {
 
         assertEquals(expectedResult, actualResult);
         assertEquals(null, p);
+        assertEquals(null, duplicatedProducer);
+        assertNotEquals(null, validProducer);
     }
 
     @Test
@@ -266,9 +288,13 @@ public class TributaryTest {
     @Test
     public void createInvalidConsumerGroup() {
         String consumerGroupId = "consumer_group1";
+        String consumerGroupId2 = "consumer_group2";
         String topicType = "type1";
-        String balancingStrategy = "InvalidBalancingStrategy";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        String validBalancingStrategy = "RoundRobin";
+        String invalidBalancingStrategy = "InvalidBalancingStrategy";
+        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, invalidBalancingStrategy);
+        ConsumerGroup validCg = tributary.createConsumerGroup(consumerGroupId2, topicType, validBalancingStrategy);
+        ConsumerGroup dupCg = tributary.createConsumerGroup(consumerGroupId2, topicType, validBalancingStrategy);
 
         String expectedResult;
         try {
@@ -281,6 +307,8 @@ public class TributaryTest {
 
         assertEquals(expectedResult, actualResult);
         assertEquals(cg, null);
+        assertNotEquals(validCg, null);
+        assertEquals(dupCg, null);
     }
 
     @Test
@@ -355,6 +383,8 @@ public class TributaryTest {
         String consumerId = "consumer1";
         String invalidConsumerGroupId = "consumer_group10";
         Consumer c = tributary.createConsumer(invalidConsumerGroupId, consumerId);
+        Consumer validConsumer = tributary.createConsumer(consumerGroupId, consumerId);
+        Consumer dupConsumer = tributary.createConsumer(consumerGroupId, consumerId);
 
         String expectedResult;
         try {
@@ -367,6 +397,8 @@ public class TributaryTest {
 
         assertEquals(expectedResult, actualResult);
         assertEquals(c, null);
+        assertNotEquals(validConsumer, null);
+        assertEquals(dupConsumer, null);
     }
 
     @Test
@@ -851,5 +883,47 @@ public class TributaryTest {
         assertEquals(producedEvent1, consumedEvents.get(0));
         assertEquals(producedEvent2, consumedEvents.get(1));
         assertEquals(producedEvent3, consumedEvents.get(2));
+    }
+
+    @Test
+    public void setValidConsumerGroupRebalancing() {
+        // Initialize identifiers and balancing methods
+        String consumerGroupId = "consumer_group1";
+        String topicType = "type1";
+        String initialBalancingMethod = "RoundRobin";
+        String newBalancingMethod = "Range";
+
+        // Create a consumer group with an initial balancing method
+        tributary.createConsumerGroup(consumerGroupId, topicType, initialBalancingMethod);
+
+        // Update the balancing method
+        ConsumerGroup updatedConsumerGroup = tributary.setConsumerGroupRebalancing(consumerGroupId, newBalancingMethod);
+
+        // Assertions
+        assertNotNull(updatedConsumerGroup);
+        assertEquals(newBalancingMethod, updatedConsumerGroup.getBalancingMethod());
+    }
+
+    @Test
+    public void setInvalidConsumerGroupRebalancing() {
+        // Invalid consumer group ID
+        String invalidConsumerGroupId = "invalid_group";
+        String validBalancingMethod = "Range";
+
+        // Invalid balancing method
+        String consumerGroupId = "consumer_group2";
+        String topicType = "type1";
+        tributary.createConsumerGroup(consumerGroupId, topicType, "RoundRobin");
+        String invalidBalancingMethod = "InvalidMethod";
+
+        // Test invalid consumer group ID
+        ConsumerGroup resultForInvalidGroup = tributary.setConsumerGroupRebalancing(invalidConsumerGroupId,
+                validBalancingMethod);
+        assertNull(resultForInvalidGroup);
+
+        // Test invalid balancing method
+        ConsumerGroup resultForInvalidMethod = tributary.setConsumerGroupRebalancing(consumerGroupId,
+                invalidBalancingMethod);
+        assertNull(resultForInvalidMethod);
     }
 }

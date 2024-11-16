@@ -35,4 +35,8 @@ public class ConsumerGroup {
         return balancingMethod;
     }
 
+    public void setBalancingMethod(String balancingMethod) {
+        this.balancingMethod = balancingMethod;
+    }
+
 }

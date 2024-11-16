@@ -15,11 +15,16 @@ public class TributaryCluster implements TributaryService {
     private List<Topic> topicList = new ArrayList<>();
     private List<ConsumerGroup> consumerGroupList = new ArrayList<>();
 
+    private List<String> validConsumerGroupBalancingMethods = new ArrayList<>();
+
     private ObjectMapper mapper; // Pretty Printer
 
     public TributaryCluster() {
         mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        validConsumerGroupBalancingMethods.add("Range");
+        validConsumerGroupBalancingMethods.add("RoundRobin");
     }
 
     private void setProducerList(List<Producer> producerList) {
@@ -130,21 +135,36 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public Topic createTopic(String id, String type) {
-        Topic topic = new Topic(id, type);
-        topicList.add(topic);
-        System.out.println("Topic " + id + " of Type " + type + " created");
-        return topic;
+        Topic topicAlreadyExist = findTopic(id);
+
+        if (topicAlreadyExist == null) {
+            Topic topic = new Topic(id, type);
+            topicList.add(topic);
+            System.out.println("Topic " + id + " of Type " + type + " created");
+            return topic;
+        } else {
+            System.err.println("Topic " + id + " already exist");
+            return null;
+        }
+
     }
 
     @Override
     public Partition createPartition(String topicId, String partitionId) {
         Topic t = findTopic(topicId);
         if (t != null) {
-            List<Partition> partitionList = t.getPartitionList();
-            Partition p = new Partition(partitionId);
-            partitionList.add(p);
-            System.out.println("Partition " + partitionId + " added to Topic " + topicId);
-            return p;
+            Partition partitionAlreadyExist = findPartition(partitionId);
+            if (partitionAlreadyExist == null) {
+                List<Partition> partitionList = t.getPartitionList();
+                Partition p = new Partition(partitionId);
+                partitionList.add(p);
+                System.out.println("Partition " + partitionId + " added to Topic " + topicId);
+                return p;
+            } else {
+                System.err.println("Partition " + partitionId + " already exist");
+                return null;
+            }
+
         } else {
             System.err.println("Topic doesn't exist");
             return null;
@@ -154,11 +174,17 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public ConsumerGroup createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
-        if (balancingMethod.equals("Range") || balancingMethod.equals("RoundRobin")) {
-            ConsumerGroup cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
-            consumerGroupList.add(cg);
-            System.out.println("Consumer Group " + consumerGroupId + " created");
-            return cg;
+        if (validConsumerGroupBalancingMethods.contains(balancingMethod)) {
+            ConsumerGroup consumerGroupAlreadyExist = findConsumerGroup(consumerGroupId);
+            if (consumerGroupAlreadyExist == null) {
+                ConsumerGroup cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
+                consumerGroupList.add(cg);
+                System.out.println("Consumer Group " + consumerGroupId + " created");
+                return cg;
+            } else {
+                System.err.println("Consumer Group " + consumerGroupId + " already exist");
+                return null;
+            }
         } else {
             System.err.println("Invalid Balancing Method");
             return null;
@@ -170,10 +196,16 @@ public class TributaryCluster implements TributaryService {
     public Consumer createConsumer(String consumerGroupId, String consumerId) {
         ConsumerGroup cg = findConsumerGroup(consumerGroupId);
         if (cg != null) {
-            Consumer c = new Consumer(consumerGroupId, consumerId);
-            cg.addConsumer(c);
-            System.out.println("Consumer " + consumerId + " added to Consumer Group " + consumerGroupId);
-            return c;
+            Consumer consumerAlreadyExist = findConsumer(consumerId);
+            if (consumerAlreadyExist == null) {
+                Consumer c = new Consumer(consumerGroupId, consumerId);
+                cg.addConsumer(c);
+                System.out.println("Consumer " + consumerId + " added to Consumer Group " + consumerGroupId);
+                return c;
+            } else {
+                System.err.println("Consumer " + consumerId + " already exist");
+                return null;
+            }
         } else {
             System.err.println("Invalid Consumer Group");
             return null;
@@ -195,9 +227,15 @@ public class TributaryCluster implements TributaryService {
             return null;
         }
 
-        producerList.add(p);
-        System.out.println("Producer " + producerId + " created");
-        return p;
+        Producer producerAlreadyExist = findProducer(producerId);
+        if (producerAlreadyExist == null) {
+            producerList.add(p);
+            System.out.println("Producer " + producerId + " created");
+            return p;
+        } else {
+            System.err.println("Producer " + producerId + " already exist");
+            return null;
+        }
     }
 
     @Override
@@ -274,5 +312,26 @@ public class TributaryCluster implements TributaryService {
         }
         List<Event> consumedEvents = c.getConsumedEventList();
         return consumedEvents;
+    }
+
+    @Override
+    public ConsumerGroup setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod) {
+        ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+
+        if (cg == null) {
+            System.err.println("Invalid Consumer Group");
+            return null;
+
+        }
+
+        if (!validConsumerGroupBalancingMethods.contains(balancingMethod)) {
+            System.err.println("Invalid Balancing Method Group");
+            return null;
+        }
+
+        cg.setBalancingMethod(balancingMethod);
+        System.out.println("Consumer Group " + consumerGroupId + " now use " + balancingMethod);
+        return cg;
+
     }
 }

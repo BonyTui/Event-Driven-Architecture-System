@@ -6,7 +6,6 @@ import java.util.ArrayList;
 public class Consumer {
     private String consumerId;
     private String consumerGroupId;
-    private String partitionId;
     private List<Event> consumedEventList = new ArrayList<>();
 
     public Consumer(String consumerGroupId, String consumerId) {
@@ -16,7 +15,6 @@ public class Consumer {
 
     public Event consume(Partition p) {
         Event event = p.getEventQueue().remove();
-        setPartitionId(p.getPartitionId());
         consumedEventList.add(event);
         return event;
     }
@@ -27,14 +25,6 @@ public class Consumer {
 
     public String getConsumerId() {
         return consumerId;
-    }
-
-    public String getPartitionId() {
-        return partitionId;
-    }
-
-    public void setPartitionId(String partitionId) {
-        this.partitionId = partitionId;
     }
 
     public List<Event> getConsumedEventList() {

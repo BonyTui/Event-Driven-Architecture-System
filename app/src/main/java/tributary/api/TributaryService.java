@@ -62,9 +62,10 @@ public interface TributaryService {
 
     // Map<String, Event> parallelConsume(List<ConsumeRequest> requests); // Consumes multiple events in parallel
 
-    // // Rebalancing and playback
-    // String setConsumerGroupRebalancing(String groupId, RebalancingStrategy strategy);
+    // Rebalancing and playback
+
     // Sets rebalancing method for a group
+    public ConsumerGroup setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod);
 
     // List<Event> playback(String consumerId, String partitionId, int offset);
     // Plays back events from a specific offset
