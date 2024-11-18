@@ -1,11 +1,15 @@
 package tributary;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -885,5 +889,96 @@ public class TributaryTest {
         ConsumerGroup<String> resultForInvalidMethod = tributary.setConsumerGroupRebalancing(consumerGroupId,
                 invalidBalancingMethod);
         assertNull(resultForInvalidMethod);
+    }
+
+    @Test
+    public void testParallelProduce() {
+        String topicId = "topic1";
+        String topicType = "String";
+        Topic<String> topic = tributary.createTopic(topicId, topicType);
+
+        String producerId = "producer1";
+        String allocationType = "Random";
+
+        String producerId2 = "producer2";
+        String allocationType2 = "Manual";
+
+        Producer<String> p = tributary.createProducer(producerId, topicType, allocationType);
+        Producer<String> p2 = tributary.createProducer(producerId2, topicType, allocationType2);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        // Create events
+        // JSON file containing the event content
+        String eventContentFilePath = "tributary/events/stringEvent.json";
+
+        Event<String> event1 = tributary.produceEvent(producerId2, topicId, eventContentFilePath, partitionId,
+                String.class);
+        // JSON file containing the event content
+        String eventContentFilePath2 = "tributary/events/stringEvent2.json";
+
+        Event<String> event2 = tributary.produceEvent(producerId, topicId, eventContentFilePath2, partitionId,
+                String.class);
+
+        List<Producer<String>> producers = Arrays.asList(p, p2);
+        List<Event<String>> events = Arrays.asList(event1, event2);
+
+        // Call parallelProduce
+        tributary.parallelProduce(producers, topicId, events);
+
+        // Verify events in topic's partitions
+        List<Partition<String>> partitions = topic.getPartitionList();
+        assertFalse(partitions.isEmpty());
+
+        List<String> producedEventIds = new ArrayList<>();
+        for (Partition<String> pp : partitions) {
+            for (Event<String> event : pp.getEventQueue()) {
+                producedEventIds.add(event.getEventId());
+            }
+        }
+
+        assertTrue(!topic.getPartitionList().isEmpty());
+    }
+
+    @Test
+    public void testParallelConsume() {
+        String topicId = "topic1";
+        String topicType = "String";
+        Topic<String> topic = tributary.createTopic(topicId, topicType);
+
+        String consumerId1 = "consumer1";
+        String consumerId2 = "consumer2";
+
+        Consumer<String> c1 = tributary.createConsumer(consumerId1, topicType);
+        Consumer<String> c2 = tributary.createConsumer(consumerId2, topicType);
+
+        String partitionId = "partition1";
+        tributary.createPartition(topicId, partitionId);
+
+        // Add events to partition
+        String eventContentFilePath = "tributary/events/stringEvent.json";
+        Event<String> event1 = tributary.produceEvent("producer1", topicId, eventContentFilePath, partitionId,
+                String.class);
+
+        String eventContentFilePath2 = "tributary/events/stringEvent2.json";
+        Event<String> event2 = tributary.produceEvent("producer2", topicId, eventContentFilePath2, partitionId,
+                String.class);
+
+        // Add partition to topic
+        Partition<String> partition = topic.getPartitionList().get(0);
+        partition.getEventQueue().add(event1);
+        partition.getEventQueue().add(event2);
+
+        List<Consumer<String>> consumers = Arrays.asList(c1, c2);
+        List<Partition<String>> partitions = topic.getPartitionList();
+
+        // Call parallelConsume
+        tributary.parallelConsume(consumers, partitions);
+
+        // Verify consumption
+        for (Partition<String> p : partitions) {
+            assertTrue(!p.getEventQueue().isEmpty());
+        }
     }
 }

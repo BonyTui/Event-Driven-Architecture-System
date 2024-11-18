@@ -34,6 +34,8 @@ public interface TributaryService<T> {
     // Deletes a consumer and returns rebalanced group info
     public void deleteConsumer(String consumerId);
 
+    ///////////////////// Event commands /////////////////////
+
     // Produce and consume commands
     public Event<T> produceEvent(String producerId, String topicId, String eventContentFile, String partitionId,
             Class<T> valueType);
@@ -43,6 +45,12 @@ public interface TributaryService<T> {
 
     // Consumes multiple events
     public List<Event<T>> consumeEvents(String consumerId, String partitionId, int numberOfEvents);
+
+    // Publishes multiple events in parallel
+    public void parallelProduce(List<Producer<T>> producers, String topic, List<Event<T>> events);
+
+    // // Consumes multiple events in parallel
+    public void parallelConsume(List<Consumer<T>> consumers, List<Partition<T>> partitions);
 
     ///////////////////// Show commands /////////////////////
 
@@ -58,16 +66,8 @@ public interface TributaryService<T> {
     // Displays consumers in a group and their partitions
     public String showProducer(String groupId);
 
-    // // Parallel commands
-    // Map<String, String> parallelProduce(List<ProduceRequest> requests); // Publishes multiple events in parallel
-
-    // Map<String, Event> parallelConsume(List<ConsumeRequest> requests); // Consumes multiple events in parallel
-
-    // Rebalancing and playback
+    ///////////////////// Rebalancing commands /////////////////////
 
     // Sets rebalancing method for a group
     public ConsumerGroup<T> setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod);
-
-    // List<Event> playback(String consumerId, String partitionId, int offset);
-    // Plays back events from a specific offset
 }

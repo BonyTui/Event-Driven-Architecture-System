@@ -362,4 +362,61 @@ public class TributaryCluster<T> implements TributaryService<T> {
         return null;
     }
 
+    public void parallelProduce(List<Producer<T>> producers, String topicId, List<Event<T>> events) {
+        Topic<T> topic = findTopic(topicId);
+        Thread[] threads = new Thread[producers.size()];
+
+        for (int i = 0; i < producers.size(); i++) {
+            final Producer<T> producer = producers.get(i);
+            final Event<T> event = events.get(i);
+
+            threads[i] = new Thread(() -> {
+                synchronized (topic) {
+                    List<Partition<T>> partitions = topic.getPartitionList();
+                    producer.assignEvent(event, partitions, null); // Assign to a random partition
+                    System.out.println("Produced event: " + event.getEventId());
+                }
+            });
+
+            threads[i].start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join(); // Wait for all threads to finish
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    public void parallelConsume(List<Consumer<T>> consumers, List<Partition<T>> partitions) {
+        Thread[] threads = new Thread[consumers.size()];
+
+        for (int i = 0; i < consumers.size(); i++) {
+            final Consumer<T> consumer = consumers.get(i);
+            final Partition<T> partition = partitions.get(i % partitions.size());
+
+            threads[i] = new Thread(() -> {
+                synchronized (partition) {
+                    Event<T> event = consumer.consume(partition);
+                    if (event != null) {
+                        System.out.println("Consumed event: " + event.getEventId() + ", Content: " + event.getValue());
+                    } else {
+                        System.out.println("No events left to consume in partition: " + partition.getPartitionId());
+                    }
+                }
+            });
+
+            threads[i].start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join(); // Wait for all threads to finish
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
 }
