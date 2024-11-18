@@ -3,10 +3,10 @@ package tributary.core;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Topic {
+public class Topic<T> {
     private String topicId;
     private String topicType;
-    private List<Partition> partitionList = new ArrayList<>();
+    private List<Partition<T>> partitionList = new ArrayList<>();
 
     public Topic(String topicId, String topicType) {
         this.topicId = topicId;
@@ -25,7 +25,7 @@ public class Topic {
         return topicType;
     }
 
-    public List<Partition> getPartitionList() {
+    public List<Partition<T>> getPartitionList() {
         return partitionList;
     }
 

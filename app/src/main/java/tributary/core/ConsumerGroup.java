@@ -3,11 +3,11 @@ package tributary.core;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConsumerGroup {
+public class ConsumerGroup<T> {
     private String consumerGroupId;
     private String topicId;
     private String balancingMethod;
-    private List<Consumer> consumerList = new ArrayList<>();
+    private List<Consumer<T>> consumerList = new ArrayList<>();
 
     public ConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         this.consumerGroupId = consumerGroupId;
@@ -15,11 +15,11 @@ public class ConsumerGroup {
         this.balancingMethod = balancingMethod;
     }
 
-    public void addConsumer(Consumer c) {
+    public void addConsumer(Consumer<T> c) {
         getConsumerList().add(c);
     }
 
-    public List<Consumer> getConsumerList() {
+    public List<Consumer<T>> getConsumerList() {
         return consumerList;
     }
 

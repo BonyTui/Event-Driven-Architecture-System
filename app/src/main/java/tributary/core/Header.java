@@ -1,14 +1,14 @@
 package tributary.core;
 
-public class Header {
+public class Header<T> {
     private String headerId;
     private long dateTimeCreated;
     private String payloadType;
 
-    public Header(String headerId) {
+    public Header(String headerId, Class<T> valueType) {
         dateTimeCreated = System.currentTimeMillis();
         this.headerId = headerId;
-        this.payloadType = "String";
+        this.payloadType = valueType.getSimpleName();
     }
 
     public String getHeaderId() {
@@ -21,5 +21,9 @@ public class Header {
 
     public String getPayloadType() {
         return payloadType;
+    }
+
+    public void setPayloadType(String payloadType) {
+        this.payloadType = payloadType;
     }
 }

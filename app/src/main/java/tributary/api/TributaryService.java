@@ -8,23 +8,23 @@ import tributary.core.Producer;
 import tributary.core.Topic;
 import tributary.core.Consumer;
 
-public interface TributaryService {
+public interface TributaryService<T> {
     ///////////////////// Create commands /////////////////////
 
     // Creates a new topic
-    public Topic createTopic(String id, String type);
+    public Topic<T> createTopic(String id, String type);
 
     // Adds a partition to a topic
-    public Partition createPartition(String topicId, String partitionId);
+    public Partition<T> createPartition(String topicId, String partitionId);
 
     // Creates a consumer group
-    public ConsumerGroup createConsumerGroup(String groupId, String topicId, String strategy);
+    public ConsumerGroup<T> createConsumerGroup(String groupId, String topicId, String strategy);
 
     // Adds a consumer to a group
-    public Consumer createConsumer(String groupId, String consumerId);
+    public Consumer<T> createConsumer(String groupId, String consumerId);
 
     // Creates a producer with a specified allocation
-    public Producer createProducer(String producerId, String type, String allocation);
+    public Producer<T> createProducer(String producerId, String type, String allocation);
 
     ///////////////////// Delete commands /////////////////////
 
@@ -35,13 +35,14 @@ public interface TributaryService {
     public void deleteConsumer(String consumerId);
 
     // Produce and consume commands
-    public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId);
+    public Event<T> produceEvent(String producerId, String topicId, String eventContentFile, String partitionId,
+            Class<T> valueType);
 
     // Consumes a single event from a partition
-    public Event consumeEvent(String consumerId, String partitionId);
+    public Event<T> consumeEvent(String consumerId, String partitionId);
 
     // Consumes multiple events
-    public List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents);
+    public List<Event<T>> consumeEvents(String consumerId, String partitionId, int numberOfEvents);
 
     ///////////////////// Show commands /////////////////////
 
@@ -65,7 +66,7 @@ public interface TributaryService {
     // Rebalancing and playback
 
     // Sets rebalancing method for a group
-    public ConsumerGroup setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod);
+    public ConsumerGroup<T> setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod);
 
     // List<Event> playback(String consumerId, String partitionId, int offset);
     // Plays back events from a specific offset

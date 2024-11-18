@@ -1,0 +1,8 @@
+{
+    "key": "exampleKey",
+    "value": "This is a string value",
+    "metadata": {
+        "source": "sensor_A",
+        "timestamp": "2024-11-12T10:30:00Z"
+    }
+}

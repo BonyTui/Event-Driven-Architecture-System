@@ -6,29 +6,34 @@ import java.util.Arrays;
 import tributary.api.TributaryService;
 import tributary.core.TributaryCluster;
 
-public class TributaryCLI {
-    private static TributaryService tributary = new TributaryCluster();
+public class TributaryCLI<T> {
+    private TributaryService<T> tributary;
     private static String commandType;
     private static String classType;
 
+    public TributaryCLI() {
+        // Initialize the TributaryCluster with a generic type
+        tributary = new TributaryCluster<>();
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        TributaryCLI<?> cli = new TributaryCLI<>();
         System.out.println("Enter input (Ctrl+C to cancel):\n");
 
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
             try {
-                handleInput(input);
+                cli.handleInput(input);
             } catch (Exception e) {
                 System.err.println("Invalid Command\n");
             }
         }
         scanner.close();
         System.out.println("Input cancelled. Program terminated.");
-
     }
 
-    private static void handleInput(String input) {
+    private void handleInput(String input) {
         if (input.isEmpty()) {
             return;
         }
@@ -66,7 +71,7 @@ public class TributaryCLI {
         System.out.println();
     }
 
-    private static void handleCreateInput(String[] inputConfig) {
+    private void handleCreateInput(String[] inputConfig) {
         String topicId;
         String topicType;
         String partitionId;
@@ -111,7 +116,7 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleShowInput(String[] inputConfig) {
+    private void handleShowInput(String[] inputConfig) {
         switch (classType) {
         case "topic":
             String topicId = inputConfig[0];
@@ -130,7 +135,7 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleDeleteInput(String[] inputConfig) {
+    private void handleDeleteInput(String[] inputConfig) {
         switch (classType) {
         case "consumer":
             String consumerId = inputConfig[0];
@@ -142,14 +147,19 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleProduceInput(String[] inputConfig) {
+    private void handleProduceInput(String[] inputConfig) {
         switch (classType) {
         case "event":
             String producerId = inputConfig[0];
             String topicId = inputConfig[1];
-            String eventContent = inputConfig[2];
+            String eventContentFile = inputConfig[2];
             String partitionId = inputConfig[3];
-            tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+            Class<T> valueType = resolveType();
+            if (valueType != null) {
+                tributary.produceEvent(producerId, topicId, eventContentFile, partitionId, valueType);
+            } else {
+                System.err.println("Unsupported value type: " + classType);
+            }
             break;
         default:
             System.err.println("Invalid Command");
@@ -157,7 +167,7 @@ public class TributaryCLI {
         }
     }
 
-    private static void handleConsumeInput(String[] inputConfig) {
+    private void handleConsumeInput(String[] inputConfig) {
         String consumerId;
         String partitionId;
         String numberOfEvents;
@@ -176,6 +186,20 @@ public class TributaryCLI {
         default:
             System.err.println("Invalid Command");
             break;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<T> resolveType() {
+        switch (classType.toLowerCase()) {
+        case "string":
+            return (Class<T>) String.class;
+        case "integer":
+            return (Class<T>) Integer.class;
+        case "double":
+            return (Class<T>) Double.class;
+        default:
+            return null;
         }
     }
 }

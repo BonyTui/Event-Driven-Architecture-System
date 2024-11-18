@@ -2,7 +2,7 @@ package tributary.core;
 
 import java.util.List;
 
-public abstract class Producer {
+public abstract class Producer<T> {
     private String producerId;
     private String topicType;
 
@@ -23,5 +23,5 @@ public abstract class Producer {
         return topicType;
     }
 
-    public abstract boolean assignEvent(Event event, List<Partition> partitionList, String partitionId);
+    public abstract boolean assignEvent(Event<T> event, List<Partition<T>> partitionList, String partitionId);
 }

@@ -3,15 +3,15 @@ package tributary.core;
 import java.util.Queue;
 import java.util.LinkedList;
 
-public class Partition {
+public class Partition<T> {
     private String partitionId;
-    private Queue<Event> eventQueue = new LinkedList<>();
+    private Queue<Event<T>> eventQueue = new LinkedList<>();
 
     public Partition(String partitionId) {
         this.partitionId = partitionId;
     }
 
-    public Queue<Event> getEventQueue() {
+    public Queue<Event<T>> getEventQueue() {
         return eventQueue;
     }
 

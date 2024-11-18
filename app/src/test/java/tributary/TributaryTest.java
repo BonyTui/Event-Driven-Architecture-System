@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -25,12 +26,12 @@ import tributary.core.Topic;
 import tributary.core.TributaryCluster;
 
 public class TributaryTest {
-    private TributaryService tributary;
+    private TributaryService<String> tributary;
     private ObjectMapper mapper; // Pretty Printer
 
     @BeforeEach
     public void initialize() {
-        tributary = new TributaryCluster();
+        tributary = new TributaryCluster<>();
         mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
@@ -45,7 +46,7 @@ public class TributaryTest {
     public void createTopic() {
         String topicId = "topic1";
         String topicType = "type1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String expectedResult;
         try {
@@ -64,7 +65,7 @@ public class TributaryTest {
         String topicId = "topic1";
         String topicType = "type1";
         tributary.createTopic(topicId, topicType);
-        Topic duplicatedTopic = tributary.createTopic(topicId, topicType);
+        Topic<String> duplicatedTopic = tributary.createTopic(topicId, topicType);
 
         assertEquals(duplicatedTopic, null);
     }
@@ -77,9 +78,9 @@ public class TributaryTest {
         String topicType = "type1";
         String topicType2 = "type2";
         String topicType3 = "type3";
-        Topic t = tributary.createTopic(topicId, topicType);
-        Topic t2 = tributary.createTopic(topicId2, topicType2);
-        Topic t3 = tributary.createTopic(topicId3, topicType3);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
+        Topic<String> t2 = tributary.createTopic(topicId2, topicType2);
+        Topic<String> t3 = tributary.createTopic(topicId3, topicType3);
 
         String expectedResult;
         String expectedResult2;
@@ -107,10 +108,10 @@ public class TributaryTest {
     public void createPartition() {
         String topicId = "topic1";
         String topicType = "type1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
-        Partition p = tributary.createPartition(topicId, partitionId);
+        Partition<String> p = tributary.createPartition(topicId, partitionId);
 
         String expectedResult;
         try {
@@ -129,13 +130,13 @@ public class TributaryTest {
     public void createInvalidPartition() {
         String topicId = "topic1";
         String topicType = "type1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
         String invalidTopicId = "topic10";
-        Partition p = tributary.createPartition(invalidTopicId, partitionId);
-        Partition validPartition = tributary.createPartition(topicId, partitionId);
-        Partition duplicatedPartition = tributary.createPartition(topicId, partitionId);
+        Partition<String> p = tributary.createPartition(invalidTopicId, partitionId);
+        Partition<String> validPartition = tributary.createPartition(topicId, partitionId);
+        Partition<String> duplicatedPartition = tributary.createPartition(topicId, partitionId);
 
         String expectedResult;
         try {
@@ -156,14 +157,14 @@ public class TributaryTest {
     public void createPartitions() {
         String topicId = "topic1";
         String topicType = "type1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
-        Partition p = tributary.createPartition(topicId, partitionId);
+        Partition<String> p = tributary.createPartition(topicId, partitionId);
         String partitionId2 = "partition2";
-        Partition p2 = tributary.createPartition(topicId, partitionId2);
+        Partition<String> p2 = tributary.createPartition(topicId, partitionId2);
         String partitionId3 = "partition3";
-        Partition p3 = tributary.createPartition(topicId, partitionId3);
+        Partition<String> p3 = tributary.createPartition(topicId, partitionId3);
 
         String expectedResult;
         try {
@@ -186,7 +187,7 @@ public class TributaryTest {
         String producerId = "producer1";
         String topicType = "type1";
         String allocationType = "Random";
-        Producer p = tributary.createProducer(producerId, topicType, allocationType);
+        Producer<String> p = tributary.createProducer(producerId, topicType, allocationType);
 
         String expectedResult;
         try {
@@ -207,9 +208,9 @@ public class TributaryTest {
         String topicType = "type1";
         String allocationType = "Random";
         String invalidAllocationType = "InvalidAllocationType";
-        Producer p = tributary.createProducer(producerId, topicType, invalidAllocationType);
-        Producer validProducer = tributary.createProducer(producerId2, topicType, allocationType);
-        Producer duplicatedProducer = tributary.createProducer(producerId2, topicType, allocationType);
+        Producer<String> p = tributary.createProducer(producerId, topicType, invalidAllocationType);
+        Producer<String> validProducer = tributary.createProducer(producerId2, topicType, allocationType);
+        Producer<String> duplicatedProducer = tributary.createProducer(producerId2, topicType, allocationType);
 
         String expectedResult;
         try {
@@ -240,9 +241,9 @@ public class TributaryTest {
         String topicType3 = "type3";
         String allocationType3 = "Random";
 
-        Producer p = tributary.createProducer(producerId, topicType, allocationType);
-        Producer p2 = tributary.createProducer(producerId2, topicType2, allocationType2);
-        Producer p3 = tributary.createProducer(producerId3, topicType3, allocationType3);
+        Producer<String> p = tributary.createProducer(producerId, topicType, allocationType);
+        Producer<String> p2 = tributary.createProducer(producerId2, topicType2, allocationType2);
+        Producer<String> p3 = tributary.createProducer(producerId3, topicType3, allocationType3);
 
         String expectedResult;
         String expectedResult2;
@@ -271,7 +272,7 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String expectedResult;
         try {
@@ -292,9 +293,11 @@ public class TributaryTest {
         String topicType = "type1";
         String validBalancingStrategy = "RoundRobin";
         String invalidBalancingStrategy = "InvalidBalancingStrategy";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, invalidBalancingStrategy);
-        ConsumerGroup validCg = tributary.createConsumerGroup(consumerGroupId2, topicType, validBalancingStrategy);
-        ConsumerGroup dupCg = tributary.createConsumerGroup(consumerGroupId2, topicType, validBalancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, invalidBalancingStrategy);
+        ConsumerGroup<String> validCg = tributary.createConsumerGroup(consumerGroupId2, topicType,
+                validBalancingStrategy);
+        ConsumerGroup<String> dupCg = tributary.createConsumerGroup(consumerGroupId2, topicType,
+                validBalancingStrategy);
 
         String expectedResult;
         try {
@@ -316,17 +319,17 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerGroupId2 = "consumer_group2";
         String topicType2 = "type1";
         String balancingStrategy2 = "Range";
-        ConsumerGroup cg2 = tributary.createConsumerGroup(consumerGroupId2, topicType2, balancingStrategy2);
+        ConsumerGroup<String> cg2 = tributary.createConsumerGroup(consumerGroupId2, topicType2, balancingStrategy2);
 
         String consumerGroupId3 = "consumer_group3";
         String topicType3 = "type9";
         String balancingStrategy3 = "RoundRobin";
-        ConsumerGroup cg3 = tributary.createConsumerGroup(consumerGroupId3, topicType3, balancingStrategy3);
+        ConsumerGroup<String> cg3 = tributary.createConsumerGroup(consumerGroupId3, topicType3, balancingStrategy3);
 
         String expectedResult;
         String expectedResult2;
@@ -355,10 +358,10 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
-        Consumer c = tributary.createConsumer(consumerGroupId, consumerId);
+        Consumer<String> c = tributary.createConsumer(consumerGroupId, consumerId);
 
         String expectedResult;
         try {
@@ -378,13 +381,13 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
         String invalidConsumerGroupId = "consumer_group10";
-        Consumer c = tributary.createConsumer(invalidConsumerGroupId, consumerId);
-        Consumer validConsumer = tributary.createConsumer(consumerGroupId, consumerId);
-        Consumer dupConsumer = tributary.createConsumer(consumerGroupId, consumerId);
+        Consumer<String> c = tributary.createConsumer(invalidConsumerGroupId, consumerId);
+        Consumer<String> validConsumer = tributary.createConsumer(consumerGroupId, consumerId);
+        Consumer<String> dupConsumer = tributary.createConsumer(consumerGroupId, consumerId);
 
         String expectedResult;
         try {
@@ -406,16 +409,16 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
-        Consumer c = tributary.createConsumer(consumerGroupId, consumerId);
+        Consumer<String> c = tributary.createConsumer(consumerGroupId, consumerId);
 
         String consumerId2 = "consumer2";
-        Consumer c2 = tributary.createConsumer(consumerGroupId, consumerId2);
+        Consumer<String> c2 = tributary.createConsumer(consumerGroupId, consumerId2);
 
         String consumerId3 = "consumer3";
-        Consumer c3 = tributary.createConsumer(consumerGroupId, consumerId3);
+        Consumer<String> c3 = tributary.createConsumer(consumerGroupId, consumerId3);
 
         String expectedResult;
         try {
@@ -437,7 +440,7 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
         tributary.createConsumer(consumerGroupId, consumerId);
@@ -461,7 +464,7 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
         tributary.createConsumer(consumerGroupId, consumerId);
@@ -486,16 +489,16 @@ public class TributaryTest {
         String consumerGroupId = "consumer_group1";
         String topicType = "type1";
         String balancingStrategy = "RoundRobin";
-        ConsumerGroup cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        ConsumerGroup<String> cg = tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
 
         String consumerId = "consumer1";
-        Consumer c = tributary.createConsumer(consumerGroupId, consumerId);
+        tributary.createConsumer(consumerGroupId, consumerId);
 
         String consumerId2 = "consumer2";
-        Consumer c2 = tributary.createConsumer(consumerGroupId, consumerId2);
+        tributary.createConsumer(consumerGroupId, consumerId2);
 
         String consumerId3 = "consumer3";
-        Consumer c3 = tributary.createConsumer(consumerGroupId, consumerId3);
+        tributary.createConsumer(consumerGroupId, consumerId3);
 
         tributary.deleteConsumer(consumerId);
         tributary.deleteConsumer(consumerId2);
@@ -521,35 +524,37 @@ public class TributaryTest {
         String topicId2 = "topic2";
         String topicType1 = "type1";
         String topicType2 = "type2";
-        Topic topic1 = tributary.createTopic(topicId1, topicType1);
-        Topic topic2 = tributary.createTopic(topicId2, topicType2);
+        Topic<String> topic1 = tributary.createTopic(topicId1, topicType1);
+        Topic<String> topic2 = tributary.createTopic(topicId2, topicType2);
 
         // Step 2: Create Partitions for the Topics
         String partitionId1 = "partition1";
         String partitionId2 = "partition2";
-        Partition partition1 = tributary.createPartition(topicId1, partitionId1);
-        Partition partition2 = tributary.createPartition(topicId2, partitionId2);
+        Partition<String> partition1 = tributary.createPartition(topicId1, partitionId1);
+        Partition<String> partition2 = tributary.createPartition(topicId2, partitionId2);
 
         // Step 3: Create Producers and Assign them to Topics
         String producerId1 = "producer1";
         String producerId2 = "producer2";
         String allocationType = "Random";
-        Producer producer1 = tributary.createProducer(producerId1, topicType1, allocationType);
-        Producer producer2 = tributary.createProducer(producerId2, topicType2, allocationType);
+        Producer<String> producer1 = tributary.createProducer(producerId1, topicType1, allocationType);
+        Producer<String> producer2 = tributary.createProducer(producerId2, topicType2, allocationType);
 
-        // Step 4: Create Consumer Groups for the Topics
+        // Step 4: Create Consumer<String> Groups for the Topics
         String consumerGroupId1 = "consumer_group1";
         String consumerGroupId2 = "consumer_group2";
         String balancingStrategy1 = "RoundRobin";
         String balancingStrategy2 = "Range";
-        ConsumerGroup consumerGroup1 = tributary.createConsumerGroup(consumerGroupId1, topicType1, balancingStrategy1);
-        ConsumerGroup consumerGroup2 = tributary.createConsumerGroup(consumerGroupId2, topicType2, balancingStrategy2);
+        ConsumerGroup<String> consumerGroup1 = tributary.createConsumerGroup(consumerGroupId1, topicType1,
+                balancingStrategy1);
+        ConsumerGroup<String> consumerGroup2 = tributary.createConsumerGroup(consumerGroupId2, topicType2,
+                balancingStrategy2);
 
-        // Step 5: Create Consumers in Each Consumer Group
+        // Step 5: Create Consumers in Each Consumer<String> Group
         String consumerId1 = "consumer1";
         String consumerId2 = "consumer2";
-        Consumer consumer1 = tributary.createConsumer(consumerGroupId1, consumerId1);
-        Consumer consumer2 = tributary.createConsumer(consumerGroupId2, consumerId2);
+        Consumer<String> consumer1 = tributary.createConsumer(consumerGroupId1, consumerId1);
+        Consumer<String> consumer2 = tributary.createConsumer(consumerGroupId2, consumerId2);
 
         // Expected Results using Pretty Print for JSON Serialization
         String expectedTopic1;
@@ -594,29 +599,25 @@ public class TributaryTest {
     }
 
     @Test
-    public void produceEventManual() {
+    public void produceEventManual() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
+        String topicType = "String";
         String allocationType = "Manual";
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
-        Partition partition = tributary.createPartition(topicId, partitionId);
+        Partition<String> partition = tributary.createPartition(topicId, partitionId);
 
-        String eventContent = "event1";
+        // JSON file containing the event content
+        String eventContentFilePath = "tributary/events/stringEvent.json";
 
-        Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+        Event<String> event = tributary.produceEvent(producerId, topicId, eventContentFilePath, partitionId,
+                String.class);
 
-        String expectedResult;
-        try {
-            expectedResult = mapper.writeValueAsString(t);
-        } catch (JsonProcessingException e) {
-            expectedResult = null;
-        }
-
+        String expectedResult = mapper.writeValueAsString(t);
         String actualResult = tributary.showTopic(topicId);
 
         assertEquals(expectedResult, actualResult);
@@ -626,38 +627,26 @@ public class TributaryTest {
     }
 
     @Test
-    public void produceEventRandom() {
-        // Initialize identifiers and content
+    public void produceEventRandom() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
+        String topicType = "Integer";
         String allocationType = "Random";
-
-        // Create producer with "Random" allocation
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> t = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
-        Partition partition = tributary.createPartition(topicId, partitionId);
+        Partition<String> partition = tributary.createPartition(topicId, partitionId);
 
-        String eventContent = "event1";
+        String eventContentFilePath = "tributary/events/stringEvent.json";
 
-        // Produce an event with random allocation
-        Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+        Event<String> event = tributary.produceEvent(producerId, topicId, eventContentFilePath, partitionId,
+                String.class);
 
-        // Use ObjectMapper to serialize the topic to JSON
-        String expectedResult;
-        try {
-            expectedResult = mapper.writeValueAsString(t);
-        } catch (JsonProcessingException e) {
-            expectedResult = null;
-        }
-
-        // Get the actual result by displaying the topic
+        String expectedResult = mapper.writeValueAsString(t);
         String actualResult = tributary.showTopic(topicId);
 
-        // Assertions
         assertEquals(expectedResult, actualResult);
         assertNotEquals(t, null);
         assertNotEquals(partition, null);
@@ -665,13 +654,10 @@ public class TributaryTest {
     }
 
     @Test
-    public void produceInvalidEvent() {
-        // Initialize identifiers and content
+    public void produceInvalidEvent() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
+        String topicType = "String";
         String allocationType = "Manual";
-
-        // Create producer with "Random" allocation
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
@@ -680,104 +666,89 @@ public class TributaryTest {
         String partitionId = "partition1";
         tributary.createPartition(topicId, partitionId);
 
-        String eventContent = "event1";
+        // JSON file containing invalid event content
+        String eventContentFile = "path/to/invalidEvent.json";
 
-        // Produce an event with random allocation
-        String invalidProducerId = "producer10";
-        String invalidTopicId = "topic10";
-        String invalidPartitionId = "partition10";
-        Event event = tributary.produceEvent(invalidProducerId, topicId, eventContent, partitionId);
-        assertEquals(event, null);
-        event = tributary.produceEvent(producerId, invalidTopicId, eventContent, partitionId);
-        assertEquals(event, null);
-        event = tributary.produceEvent(producerId, topicId, eventContent, invalidPartitionId);
-        assertEquals(event, null);
+        Event<String> event = tributary.produceEvent("invalidProducer", topicId, eventContentFile, partitionId,
+                String.class);
+        assertNull(event);
+
+        event = tributary.produceEvent(producerId, "invalidTopic", eventContentFile, partitionId, String.class);
+        assertNull(event);
+
+        event = tributary.produceEvent(producerId, topicId, eventContentFile, "invalidPartition", String.class);
+        assertNull(event);
     }
 
     @Test
-    public void produceEventsManual() {
-        // The ordering themselves are tested through CLI and manually checking
+    public void produceEventsManual() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
+        String topicType = "String";
         String allocationType = "Manual";
-
-        // Set up producer, topic, and partition
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> topic = tributary.createTopic(topicId, topicType);
 
         String partitionId = "partition1";
-        Partition partition = tributary.createPartition(topicId, partitionId);
+        Partition<String> partition = tributary.createPartition(topicId, partitionId);
 
-        // Produce 3 events with "Manual" allocation
-        for (int i = 1; i <= 3; i++) {
-            String eventContent = "event" + i;
-            Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
-            assertNotEquals(event, null); // Ensure each event is created successfully
-        }
+        // JSON files containing the event content
+        String eventContentFile1 = getClass().getClassLoader().getResource("tributary/events/stringEvent.json")
+                .getPath();
+        String eventContentFile2 = getClass().getClassLoader().getResource("tributary/events/intEvent2.json").getPath();
 
-        // Serialize topic to JSON
-        String expectedResult;
-        try {
-            expectedResult = mapper.writeValueAsString(t);
-        } catch (JsonProcessingException e) {
-            expectedResult = null;
-        }
+        Event<String> event1 = tributary.produceEvent(producerId, topicId, eventContentFile1, partitionId,
+                String.class);
+        Event<String> event2 = tributary.produceEvent(producerId, topicId, eventContentFile2, partitionId,
+                String.class);
 
-        // Get the actual result and perform assertions
+        String expectedResult = mapper.writeValueAsString(topic);
         String actualResult = tributary.showTopic(topicId);
+
         assertEquals(expectedResult, actualResult);
-        assertNotEquals(t, null);
+        assertNotEquals(topic, null);
         assertNotEquals(partition, null);
+        assertNotEquals(event1, null);
+        assertNotEquals(event2, null);
     }
 
     @Test
-    public void produceEventsRandom() {
-        // The ordering themselves are tested through CLI and manually checking
+    public void produceEventsRandom() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
+        String topicType = "Integer";
         String allocationType = "Random";
-
-        // Set up producer, topic, and partition
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
-        Topic t = tributary.createTopic(topicId, topicType);
+        Topic<String> topic = tributary.createTopic(topicId, topicType);
 
-        String partitionId = "partition1";
-        Partition partition = tributary.createPartition(topicId, partitionId);
+        String partitionId1 = "partition1";
+        String partitionId2 = "partition2";
+        tributary.createPartition(topicId, partitionId1);
+        tributary.createPartition(topicId, partitionId2);
 
-        // Produce 3 events with "Random" allocation
-        for (int i = 1; i <= 3; i++) {
-            String eventContent = "event" + i;
-            Event event = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
-            assertNotEquals(event, null); // Ensure each event is created successfully
-        }
+        // JSON files containing event content
+        String eventContentFile1 = getClass().getClassLoader().getResource("tributary/events/intEvent.json").getPath();
+        String eventContentFile2 = getClass().getClassLoader().getResource("tributary/events/intEvent2.json").getPath();
 
-        // Serialize topic to JSON
-        String expectedResult;
-        try {
-            expectedResult = mapper.writeValueAsString(t);
-        } catch (JsonProcessingException e) {
-            expectedResult = null;
-        }
+        Event<String> event1 = tributary.produceEvent(producerId, topicId, eventContentFile1, null, String.class);
+        Event<String> event2 = tributary.produceEvent(producerId, topicId, eventContentFile2, null, String.class);
 
-        // Get the actual result and perform assertions
+        String expectedResult = mapper.writeValueAsString(topic);
         String actualResult = tributary.showTopic(topicId);
+
         assertEquals(expectedResult, actualResult);
-        assertNotEquals(t, null);
-        assertNotEquals(partition, null);
+        assertNotEquals(topic, null);
+        assertNotEquals(event1, null);
+        assertNotEquals(event2, null);
     }
 
     @Test
-    public void consumeEvent() {
-        // Initialize identifiers and content
+    public void consumeEvent() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
-        String allocationType = "Random";
-
-        // Create producer with "Random" allocation
+        String topicType = "String";
+        String allocationType = "Manual";
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
@@ -786,32 +757,28 @@ public class TributaryTest {
         String partitionId = "partition1";
         tributary.createPartition(topicId, partitionId);
 
-        String eventContent = "event1";
+        // JSON file containing the event content
+        String eventContentFilePath = "tributary/events/stringEvent.json";
 
-        // Produce an event with random allocation
-        Event producedEvent = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
+        Event<String> producedEvent = tributary.produceEvent(producerId, topicId, eventContentFilePath, partitionId,
+                String.class);
 
-        // Consume that event
-        String consumerGroupId = "consumer_group1";
-        String balancingStrategy = "RoundRobin";
-        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        String consumerGroupId = "consumerGroup1";
+        tributary.createConsumerGroup(consumerGroupId, topicId, "RoundRobin");
 
         String consumerId = "consumer1";
         tributary.createConsumer(consumerGroupId, consumerId);
-        Event consumedEvent = tributary.consumeEvent(consumerId, partitionId);
 
-        // Assertions
+        Event<String> consumedEvent = tributary.consumeEvent(consumerId, partitionId);
+
         assertEquals(producedEvent, consumedEvent);
     }
 
     @Test
     public void consumeInvalidEvent() {
-        // Initialize identifiers and content
         String producerId = "producer1";
         String topicType = "type1";
         String allocationType = "Random";
-
-        // Create producer with "Random" allocation
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
@@ -821,36 +788,28 @@ public class TributaryTest {
         tributary.createPartition(topicId, partitionId);
 
         String eventContent = "event1";
+        tributary.produceEvent(producerId, topicId, eventContent, partitionId, String.class);
 
-        // Produce an event with random allocation
-        Event producedEvent = tributary.produceEvent(producerId, topicId, eventContent, partitionId);
-
-        // Consume that event
-        String consumerGroupId = "consumer_group1";
-        String balancingStrategy = "RoundRobin";
-        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        String consumerGroupId = "consumerGroup1";
+        tributary.createConsumerGroup(consumerGroupId, topicId, "RoundRobin");
 
         String consumerId = "consumer1";
         tributary.createConsumer(consumerGroupId, consumerId);
-        String invalidPartitionId = "partition10";
-        Event consumedEvent = tributary.consumeEvent(consumerId, invalidPartitionId);
-        assertEquals(null, consumedEvent);
-        String invalidConsumerId = "consumer10";
-        consumedEvent = tributary.consumeEvent(invalidConsumerId, partitionId);
+
+        // Test invalid partition
+        Event<String> consumedEvent = tributary.consumeEvent(consumerId, "invalidPartition");
         assertEquals(null, consumedEvent);
 
-        // Assertions
-        assertNotEquals(producedEvent, consumedEvent);
+        // Test invalid consumer
+        consumedEvent = tributary.consumeEvent("invalidConsumer", partitionId);
+        assertEquals(null, consumedEvent);
     }
 
     @Test
-    public void consumeEvents() {
-        // Initialize identifiers and content
+    public void consumeEvents() throws IOException {
         String producerId = "producer1";
-        String topicType = "type1";
-        String allocationType = "Random";
-
-        // Create producer with "Random" allocation
+        String topicType = "String";
+        String allocationType = "Manual";
         tributary.createProducer(producerId, topicType, allocationType);
 
         String topicId = "topic1";
@@ -859,27 +818,29 @@ public class TributaryTest {
         String partitionId = "partition1";
         tributary.createPartition(topicId, partitionId);
 
-        // Produce multiple events with random allocation
-        String eventContent1 = "event1";
-        String eventContent2 = "event2";
-        String eventContent3 = "event3";
-        Event producedEvent1 = tributary.produceEvent(producerId, topicId, eventContent1, partitionId);
-        Event producedEvent2 = tributary.produceEvent(producerId, topicId, eventContent2, partitionId);
-        Event producedEvent3 = tributary.produceEvent(producerId, topicId, eventContent3, partitionId);
+        // JSON files containing event content
+        String eventContentFile1 = getClass().getClassLoader().getResource("tributary/events/stringEvent.json")
+                .getPath();
+        String eventContentFile2 = getClass().getClassLoader().getResource("tributary/events/stringEvent2.json")
+                .getPath();
+        String eventContentFile3 = getClass().getClassLoader().getResource("tributary/events/intEvent2.json").getPath();
 
-        // Consume the specified number of events
-        String consumerGroupId = "consumer_group1";
-        String balancingStrategy = "RoundRobin";
-        tributary.createConsumerGroup(consumerGroupId, topicType, balancingStrategy);
+        Event<String> producedEvent1 = tributary.produceEvent(producerId, topicId, eventContentFile1, partitionId,
+                String.class);
+        Event<String> producedEvent2 = tributary.produceEvent(producerId, topicId, eventContentFile2, partitionId,
+                String.class);
+        Event<String> producedEvent3 = tributary.produceEvent(producerId, topicId, eventContentFile3, partitionId,
+                String.class);
+
+        String consumerGroupId = "consumerGroup1";
+        tributary.createConsumerGroup(consumerGroupId, topicId, "RoundRobin");
 
         String consumerId = "consumer1";
         tributary.createConsumer(consumerGroupId, consumerId);
 
-        int numberOfEventsToConsume = 3;
-        List<Event> consumedEvents = tributary.consumeEvents(consumerId, partitionId, numberOfEventsToConsume);
+        List<Event<String>> consumedEvents = tributary.consumeEvents(consumerId, partitionId, 3);
 
-        // Assertions
-        assertEquals(numberOfEventsToConsume, consumedEvents.size());
+        assertEquals(3, consumedEvents.size());
         assertEquals(producedEvent1, consumedEvents.get(0));
         assertEquals(producedEvent2, consumedEvents.get(1));
         assertEquals(producedEvent3, consumedEvents.get(2));
@@ -897,7 +858,8 @@ public class TributaryTest {
         tributary.createConsumerGroup(consumerGroupId, topicType, initialBalancingMethod);
 
         // Update the balancing method
-        ConsumerGroup updatedConsumerGroup = tributary.setConsumerGroupRebalancing(consumerGroupId, newBalancingMethod);
+        ConsumerGroup<String> updatedConsumerGroup = tributary.setConsumerGroupRebalancing(consumerGroupId,
+                newBalancingMethod);
 
         // Assertions
         assertNotNull(updatedConsumerGroup);
@@ -917,12 +879,12 @@ public class TributaryTest {
         String invalidBalancingMethod = "InvalidMethod";
 
         // Test invalid consumer group ID
-        ConsumerGroup resultForInvalidGroup = tributary.setConsumerGroupRebalancing(invalidConsumerGroupId,
+        ConsumerGroup<String> resultForInvalidGroup = tributary.setConsumerGroupRebalancing(invalidConsumerGroupId,
                 validBalancingMethod);
         assertNull(resultForInvalidGroup);
 
         // Test invalid balancing method
-        ConsumerGroup resultForInvalidMethod = tributary.setConsumerGroupRebalancing(consumerGroupId,
+        ConsumerGroup<String> resultForInvalidMethod = tributary.setConsumerGroupRebalancing(consumerGroupId,
                 invalidBalancingMethod);
         assertNull(resultForInvalidMethod);
     }

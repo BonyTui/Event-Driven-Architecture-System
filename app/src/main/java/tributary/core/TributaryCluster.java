@@ -1,8 +1,13 @@
 package tributary.core;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,10 +15,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import tributary.api.TributaryService;
 
-public class TributaryCluster implements TributaryService {
-    private List<Producer> producerList = new ArrayList<>();
-    private List<Topic> topicList = new ArrayList<>();
-    private List<ConsumerGroup> consumerGroupList = new ArrayList<>();
+public class TributaryCluster<T> implements TributaryService<T> {
+    private List<Producer<T>> producerList = new ArrayList<>();
+    private List<Topic<T>> topicList = new ArrayList<>();
+    private List<ConsumerGroup<T>> consumerGroupList = new ArrayList<>();
 
     private List<String> validConsumerGroupBalancingMethods = new ArrayList<>();
 
@@ -27,15 +32,15 @@ public class TributaryCluster implements TributaryService {
         validConsumerGroupBalancingMethods.add("RoundRobin");
     }
 
-    private void setProducerList(List<Producer> producerList) {
+    private void setProducerList(List<Producer<T>> producerList) {
         this.producerList = producerList;
     }
 
-    private void setTopicList(List<Topic> topicList) {
+    private void setTopicList(List<Topic<T>> topicList) {
         this.topicList = topicList;
     }
 
-    private void setConsumerGroupList(List<ConsumerGroup> consumerGroupList) {
+    private void setConsumerGroupList(List<ConsumerGroup<T>> consumerGroupList) {
         this.consumerGroupList = consumerGroupList;
     }
 
@@ -45,13 +50,13 @@ public class TributaryCluster implements TributaryService {
         setConsumerGroupList(null);
     }
 
-    private Topic findTopic(String id) {
+    private Topic<T> findTopic(String id) {
         return topicList.stream().filter(topic -> topic.getTopicId().equals(id)).findAny().orElse(null);
     }
 
-    private Partition findPartition(String id) {
-        Partition p;
-        for (Topic t : topicList) {
+    private Partition<T> findPartition(String id) {
+        Partition<T> p;
+        for (Topic<T> t : topicList) {
             p = t.getPartitionList().stream().filter(partition -> partition.getPartitionId().equals(id)).findAny()
                     .orElse(null);
             if (p != null) {
@@ -61,17 +66,17 @@ public class TributaryCluster implements TributaryService {
         return null;
     }
 
-    private Producer findProducer(String id) {
+    private Producer<T> findProducer(String id) {
         return producerList.stream().filter(producer -> producer.getProducerId().equals(id)).findAny().orElse(null);
     }
 
-    private ConsumerGroup findConsumerGroup(String id) {
+    private ConsumerGroup<T> findConsumerGroup(String id) {
         return consumerGroupList.stream().filter(group -> group.getConsumerGroupId().equals(id)).findAny().orElse(null);
     }
 
-    private Consumer findConsumer(String id) {
-        Consumer c;
-        for (ConsumerGroup cg : consumerGroupList) {
+    private Consumer<T> findConsumer(String id) {
+        Consumer<T> c;
+        for (ConsumerGroup<T> cg : consumerGroupList) {
             c = cg.getConsumerList().stream().filter(consumer -> consumer.getConsumerId().equals(id)).findAny()
                     .orElse(null);
             if (c != null) {
@@ -83,7 +88,7 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public String showTopic(String id) {
-        Topic t = findTopic(id);
+        Topic<T> t = findTopic(id);
         String prettyJson;
         try {
             prettyJson = mapper.writeValueAsString(t);
@@ -97,7 +102,7 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public String showConsumerGroup(String id) {
-        ConsumerGroup cg = findConsumerGroup(id);
+        ConsumerGroup<T> cg = findConsumerGroup(id);
         String prettyJson;
         try {
             prettyJson = mapper.writeValueAsString(cg);
@@ -111,7 +116,7 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public String showProducer(String id) {
-        Producer p = findProducer(id);
+        Producer<T> p = findProducer(id);
 
         String prettyJson;
         try {
@@ -134,11 +139,11 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public Topic createTopic(String id, String type) {
-        Topic topicAlreadyExist = findTopic(id);
+    public Topic<T> createTopic(String id, String type) {
+        Topic<T> topicAlreadyExist = findTopic(id);
 
         if (topicAlreadyExist == null) {
-            Topic topic = new Topic(id, type);
+            Topic<T> topic = new Topic<T>(id, type);
             topicList.add(topic);
             System.out.println("Topic " + id + " of Type " + type + " created");
             return topic;
@@ -150,13 +155,13 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public Partition createPartition(String topicId, String partitionId) {
-        Topic t = findTopic(topicId);
+    public Partition<T> createPartition(String topicId, String partitionId) {
+        Topic<T> t = findTopic(topicId);
         if (t != null) {
-            Partition partitionAlreadyExist = findPartition(partitionId);
+            Partition<T> partitionAlreadyExist = findPartition(partitionId);
             if (partitionAlreadyExist == null) {
-                List<Partition> partitionList = t.getPartitionList();
-                Partition p = new Partition(partitionId);
+                List<Partition<T>> partitionList = t.getPartitionList();
+                Partition<T> p = new Partition<T>(partitionId);
                 partitionList.add(p);
                 System.out.println("Partition " + partitionId + " added to Topic " + topicId);
                 return p;
@@ -173,11 +178,11 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public ConsumerGroup createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
+    public ConsumerGroup<T> createConsumerGroup(String consumerGroupId, String topicId, String balancingMethod) {
         if (validConsumerGroupBalancingMethods.contains(balancingMethod)) {
-            ConsumerGroup consumerGroupAlreadyExist = findConsumerGroup(consumerGroupId);
+            ConsumerGroup<T> consumerGroupAlreadyExist = findConsumerGroup(consumerGroupId);
             if (consumerGroupAlreadyExist == null) {
-                ConsumerGroup cg = new ConsumerGroup(consumerGroupId, topicId, balancingMethod);
+                ConsumerGroup<T> cg = new ConsumerGroup<T>(consumerGroupId, topicId, balancingMethod);
                 consumerGroupList.add(cg);
                 System.out.println("Consumer Group " + consumerGroupId + " created");
                 return cg;
@@ -193,12 +198,12 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public Consumer createConsumer(String consumerGroupId, String consumerId) {
-        ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+    public Consumer<T> createConsumer(String consumerGroupId, String consumerId) {
+        ConsumerGroup<T> cg = findConsumerGroup(consumerGroupId);
         if (cg != null) {
-            Consumer consumerAlreadyExist = findConsumer(consumerId);
+            Consumer<T> consumerAlreadyExist = findConsumer(consumerId);
             if (consumerAlreadyExist == null) {
-                Consumer c = new Consumer(consumerGroupId, consumerId);
+                Consumer<T> c = new Consumer<T>(consumerGroupId, consumerId);
                 cg.addConsumer(c);
                 System.out.println("Consumer " + consumerId + " added to Consumer Group " + consumerGroupId);
                 return c;
@@ -213,21 +218,21 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public Producer createProducer(String producerId, String type, String allocation) {
-        Producer p;
+    public Producer<T> createProducer(String producerId, String type, String allocation) {
+        Producer<T> p;
         switch (allocation) {
         case "Random":
-            p = new RandomProducer(producerId, type);
+            p = new RandomProducer<T>(producerId, type);
             break;
         case "Manual":
-            p = new ManualProducer(producerId, type);
+            p = new ManualProducer<T>(producerId, type);
             break;
         default:
             System.err.println("Invalid Allocation Method");
             return null;
         }
 
-        Producer producerAlreadyExist = findProducer(producerId);
+        Producer<T> producerAlreadyExist = findProducer(producerId);
         if (producerAlreadyExist == null) {
             producerList.add(p);
             System.out.println("Producer " + producerId + " created");
@@ -240,10 +245,10 @@ public class TributaryCluster implements TributaryService {
 
     @Override
     public void deleteConsumer(String consumerId) {
-        Consumer c = findConsumer(consumerId);
+        Consumer<T> c = findConsumer(consumerId);
         if (c != null) {
             String consumerGroupId = c.getConsumerGroupId();
-            ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+            ConsumerGroup<T> cg = findConsumerGroup(consumerGroupId);
             cg.getConsumerList().remove(c);
             System.out.println("Consumer " + consumerId + " was deleted from Consumer Group " + consumerGroupId);
             System.out.println("Updated Consumer Group " + consumerGroupId);
@@ -254,15 +259,19 @@ public class TributaryCluster implements TributaryService {
         }
     }
 
-    @Override
-    public Event produceEvent(String producerId, String topicId, String eventContent, String partitionId) {
+    // @Override
+    public Event<T> produceEvent(String producerId, String topicId, String eventContentFilePath, String partitionId,
+            Class<T> valueType) {
         String eventID = UUID.randomUUID().toString();
         String headerID = UUID.randomUUID().toString();
-        Header header = new Header(headerID);
-        Event event = new Event(eventID, header, partitionId, eventContent);
+        Header<T> header = new Header<T>(headerID, valueType);
 
-        Producer producer = findProducer(producerId);
-        Topic topic = findTopic(topicId);
+        T value = parseJsonToEvent(eventContentFilePath, valueType);
+
+        Event<T> event = new Event<T>(eventID, header, partitionId, value); // Event with wildcard
+
+        Producer<T> producer = findProducer(producerId);
+        Topic<T> topic = findTopic(topicId);
 
         if (producer == null) {
             System.err.println("Invalid Producer");
@@ -274,7 +283,7 @@ public class TributaryCluster implements TributaryService {
             return null;
         }
 
-        List<Partition> partitionList = topic.getPartitionList();
+        List<Partition<T>> partitionList = topic.getPartitionList(); // Use wildcard for partition list
 
         Boolean assigned = producer.assignEvent(event, partitionList, partitionId);
         if (!assigned) {
@@ -286,9 +295,9 @@ public class TributaryCluster implements TributaryService {
     }
 
     @Override
-    public Event consumeEvent(String consumerId, String partitionId) {
-        Consumer c = findConsumer(consumerId);
-        Partition p = findPartition(partitionId);
+    public Event<T> consumeEvent(String consumerId, String partitionId) {
+        Consumer<T> c = findConsumer(consumerId);
+        Partition<T> p = findPartition(partitionId);
 
         if (c == null) {
             System.err.println("Invalid Consumer");
@@ -300,23 +309,23 @@ public class TributaryCluster implements TributaryService {
             return null;
         }
 
-        Event event = c.consume(p);
+        Event<T> event = c.consume(p);
         return event;
     }
 
     @Override
-    public List<Event> consumeEvents(String consumerId, String partitionId, int numberOfEvents) {
-        Consumer c = findConsumer(consumerId);
+    public List<Event<T>> consumeEvents(String consumerId, String partitionId, int numberOfEvents) {
+        Consumer<T> c = findConsumer(consumerId);
         for (int i = 0; i < numberOfEvents; i++) {
             consumeEvent(consumerId, partitionId);
         }
-        List<Event> consumedEvents = c.getConsumedEventList();
+        List<Event<T>> consumedEvents = c.getConsumedEventList();
         return consumedEvents;
     }
 
     @Override
-    public ConsumerGroup setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod) {
-        ConsumerGroup cg = findConsumerGroup(consumerGroupId);
+    public ConsumerGroup<T> setConsumerGroupRebalancing(String consumerGroupId, String balancingMethod) {
+        ConsumerGroup<T> cg = findConsumerGroup(consumerGroupId);
 
         if (cg == null) {
             System.err.println("Invalid Consumer Group");
@@ -332,6 +341,26 @@ public class TributaryCluster implements TributaryService {
         cg.setBalancingMethod(balancingMethod);
         System.out.println("Consumer Group " + consumerGroupId + " now use " + balancingMethod);
         return cg;
-
     }
+
+    // helper method to parse JSON to event using JSON object:
+    public T parseJsonToEvent(String eventFilePath, Class<T> classType) {
+        try {
+            // InputStream inputStream = new FileInputStream(eventFilePath);
+            InputStream inputStream = getClass().getClassLoader()
+                    .getResourceAsStream("tributary/events/stringEvent.json");
+            InputStreamReader streamReader = new InputStreamReader(inputStream);
+            JSONObject jsonObject = new JSONObject(new JSONTokener(streamReader));
+            if (classType == String.class) {
+                return classType.cast(jsonObject.getString("value"));
+            } else if (classType == Integer.class) {
+                return classType.cast(jsonObject.getInt("value"));
+            }
+        } catch (Exception exception) {
+            System.out.println("Error reading or parsing JSON from file: " + eventFilePath);
+            exception.printStackTrace();
+        }
+        return null;
+    }
+
 }

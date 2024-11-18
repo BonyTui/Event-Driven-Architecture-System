@@ -1,19 +1,19 @@
 package tributary.core;
 
-public class Event {
+public class Event<T> {
     private String eventId;
-    private Header header;
+    private Header<T> header;
     private String key;
-    private String value;
+    private T value;
 
-    public Event(String eventId, Header header, String key, String value) {
+    public Event(String eventId, Header<T> header, String key, T value) {
         this.eventId = eventId;
         this.header = header;
         this.key = key;
         this.value = value;
     }
 
-    public Header getHeader() {
+    public Header<T> getHeader() {
         return header;
     }
 
@@ -25,7 +25,7 @@ public class Event {
         return key;
     }
 
-    public String getValue() {
+    public T getValue() {
         return value;
     }
 
