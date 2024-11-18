@@ -268,7 +268,7 @@ public class TributaryCluster<T> implements TributaryService<T> {
 
         T value = parseJsonToEvent(eventContentFilePath, valueType);
 
-        Event<T> event = new Event<T>(eventID, header, partitionId, value); // Event with wildcard
+        Event<T> event = new Event<T>(eventID, header, partitionId, value);
 
         Producer<T> producer = findProducer(producerId);
         Topic<T> topic = findTopic(topicId);
@@ -283,7 +283,7 @@ public class TributaryCluster<T> implements TributaryService<T> {
             return null;
         }
 
-        List<Partition<T>> partitionList = topic.getPartitionList(); // Use wildcard for partition list
+        List<Partition<T>> partitionList = topic.getPartitionList();
 
         Boolean assigned = producer.assignEvent(event, partitionList, partitionId);
         if (!assigned) {
@@ -347,8 +347,7 @@ public class TributaryCluster<T> implements TributaryService<T> {
     public T parseJsonToEvent(String eventFilePath, Class<T> classType) {
         try {
             // InputStream inputStream = new FileInputStream(eventFilePath);
-            InputStream inputStream = getClass().getClassLoader()
-                    .getResourceAsStream("tributary/events/stringEvent.json");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(eventFilePath);
             InputStreamReader streamReader = new InputStreamReader(inputStream);
             JSONObject jsonObject = new JSONObject(new JSONTokener(streamReader));
             if (classType == String.class) {

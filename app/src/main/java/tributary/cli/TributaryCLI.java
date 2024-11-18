@@ -10,6 +10,7 @@ public class TributaryCLI<T> {
     private TributaryService<T> tributary;
     private static String commandType;
     private static String classType;
+    private String eventValueType;
 
     public TributaryCLI() {
         // Initialize the TributaryCluster with a generic type
@@ -84,8 +85,8 @@ public class TributaryCLI<T> {
         switch (classType) {
         case "topic":
             topicId = inputConfig[0];
-            topicType = inputConfig[1];
-            tributary.createTopic(topicId, topicType);
+            eventValueType = inputConfig[1];
+            tributary.createTopic(topicId, eventValueType);
             break;
         case "partition":
             topicId = inputConfig[0];
@@ -148,21 +149,29 @@ public class TributaryCLI<T> {
     }
 
     private void handleProduceInput(String[] inputConfig) {
-        switch (classType) {
-        case "event":
-            String producerId = inputConfig[0];
-            String topicId = inputConfig[1];
-            String eventContentFile = inputConfig[2];
-            String partitionId = inputConfig[3];
-            Class<T> valueType = resolveType();
-            if (valueType != null) {
-                tributary.produceEvent(producerId, topicId, eventContentFile, partitionId, valueType);
-            } else {
-                System.err.println("Unsupported value type: " + classType);
-            }
+        String producerId = inputConfig[0];
+        String topicId = inputConfig[1];
+        String eventContentFilePath = inputConfig[2];
+        String partitionId = inputConfig[3];
+        switch (eventValueType.toLowerCase()) {
+        case "string":
+            // Cast TributaryService to the specific type
+            @SuppressWarnings("unchecked")
+            TributaryService<String> stringTributary = (TributaryService<String>) tributary;
+
+            // Call produceEvent with String.class
+            stringTributary.produceEvent(producerId, topicId, eventContentFilePath, partitionId, String.class);
+            break;
+        case "int":
+            // Cast TributaryService to the specific type
+            @SuppressWarnings("unchecked")
+            TributaryService<Integer> intTributary = (TributaryService<Integer>) tributary;
+
+            // Call produceEvent with Integer.class
+            intTributary.produceEvent(producerId, topicId, eventContentFilePath, partitionId, Integer.class);
             break;
         default:
-            System.err.println("Invalid Command");
+            System.err.println("Unsupported class type: " + eventValueType);
             break;
         }
     }
@@ -186,20 +195,6 @@ public class TributaryCLI<T> {
         default:
             System.err.println("Invalid Command");
             break;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Class<T> resolveType() {
-        switch (classType.toLowerCase()) {
-        case "string":
-            return (Class<T>) String.class;
-        case "integer":
-            return (Class<T>) Integer.class;
-        case "double":
-            return (Class<T>) Double.class;
-        default:
-            return null;
         }
     }
 }

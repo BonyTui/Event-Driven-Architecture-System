@@ -819,11 +819,9 @@ public class TributaryTest {
         tributary.createPartition(topicId, partitionId);
 
         // JSON files containing event content
-        String eventContentFile1 = getClass().getClassLoader().getResource("tributary/events/stringEvent.json")
-                .getPath();
-        String eventContentFile2 = getClass().getClassLoader().getResource("tributary/events/stringEvent2.json")
-                .getPath();
-        String eventContentFile3 = getClass().getClassLoader().getResource("tributary/events/intEvent2.json").getPath();
+        String eventContentFile1 = "tributary/events/stringEvent.json";
+        String eventContentFile2 = "tributary/events/stringEvent2.json";
+        String eventContentFile3 = "tributary/events/intEvent2.json";
 
         Event<String> producedEvent1 = tributary.produceEvent(producerId, topicId, eventContentFile1, partitionId,
                 String.class);
