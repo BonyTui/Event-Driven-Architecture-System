@@ -310,6 +310,7 @@ public class TributaryCluster<T> implements TributaryService<T> {
         }
 
         Event<T> event = c.consume(p);
+        System.out.println("Consumer " + consumerId + " consumed Event " + event.getEventId());
         return event;
     }
 
